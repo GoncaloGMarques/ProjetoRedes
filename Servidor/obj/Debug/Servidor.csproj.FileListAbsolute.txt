@@ -1,0 +1,10 @@
+D:\Users\gonga\Documents\Visual Studio 2013\Projects\ProjetoRedes(Console)\Servidor\bin\Debug\Servidor.exe.config
+D:\Users\gonga\Documents\Visual Studio 2013\Projects\ProjetoRedes(Console)\Servidor\bin\Debug\Servidor.exe
+D:\Users\gonga\Documents\Visual Studio 2013\Projects\ProjetoRedes(Console)\Servidor\bin\Debug\Servidor.pdb
+D:\Users\gonga\Documents\Visual Studio 2013\Projects\ProjetoRedes(Console)\Servidor\bin\Debug\Common.dll
+D:\Users\gonga\Documents\Visual Studio 2013\Projects\ProjetoRedes(Console)\Servidor\bin\Debug\Newtonsoft.Json.dll
+D:\Users\gonga\Documents\Visual Studio 2013\Projects\ProjetoRedes(Console)\Servidor\bin\Debug\Common.pdb
+D:\Users\gonga\Documents\Visual Studio 2013\Projects\ProjetoRedes(Console)\Servidor\bin\Debug\Newtonsoft.Json.xml
+D:\Users\gonga\Documents\Visual Studio 2013\Projects\ProjetoRedes(Console)\Servidor\obj\Debug\Servidor.exe
+D:\Users\gonga\Documents\Visual Studio 2013\Projects\ProjetoRedes(Console)\Servidor\obj\Debug\Servidor.pdb
+d:\users\gonga\documents\visual studio 2013\Projects\ProjetoRedes(Console)\Servidor\obj\Debug\Servidor.csprojResolveAssemblyReference.cache

@@ -1,0 +1,10 @@
+D:\Users\gonga\Documents\Visual Studio 2013\Projects\ProjetoRedes(Console)\ProjetoRedes(Console)\bin\Debug\ProjetoRedes(Console).exe.config
+D:\Users\gonga\Documents\Visual Studio 2013\Projects\ProjetoRedes(Console)\ProjetoRedes(Console)\bin\Debug\ProjetoRedes(Console).exe
+D:\Users\gonga\Documents\Visual Studio 2013\Projects\ProjetoRedes(Console)\ProjetoRedes(Console)\bin\Debug\ProjetoRedes(Console).pdb
+D:\Users\gonga\Documents\Visual Studio 2013\Projects\ProjetoRedes(Console)\ProjetoRedes(Console)\obj\Debug\Cliente.csprojResolveAssemblyReference.cache
+D:\Users\gonga\Documents\Visual Studio 2013\Projects\ProjetoRedes(Console)\ProjetoRedes(Console)\obj\Debug\ProjetoRedes(Console).exe
+D:\Users\gonga\Documents\Visual Studio 2013\Projects\ProjetoRedes(Console)\ProjetoRedes(Console)\obj\Debug\ProjetoRedes(Console).pdb
+D:\Users\gonga\Documents\Visual Studio 2013\Projects\ProjetoRedes(Console)\ProjetoRedes(Console)\bin\Debug\Common.dll
+D:\Users\gonga\Documents\Visual Studio 2013\Projects\ProjetoRedes(Console)\ProjetoRedes(Console)\bin\Debug\Newtonsoft.Json.dll
+D:\Users\gonga\Documents\Visual Studio 2013\Projects\ProjetoRedes(Console)\ProjetoRedes(Console)\bin\Debug\Common.pdb
+D:\Users\gonga\Documents\Visual Studio 2013\Projects\ProjetoRedes(Console)\ProjetoRedes(Console)\bin\Debug\Newtonsoft.Json.xml

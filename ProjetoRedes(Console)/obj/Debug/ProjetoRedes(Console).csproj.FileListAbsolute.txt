@@ -1,0 +1,6 @@
+d:\users\gonga\documents\visual studio 2013\Projects\ProjetoRedes(Console)\ProjetoRedes(Console)\bin\Debug\ProjetoRedes(Console).exe.config
+d:\users\gonga\documents\visual studio 2013\Projects\ProjetoRedes(Console)\ProjetoRedes(Console)\bin\Debug\ProjetoRedes(Console).exe
+d:\users\gonga\documents\visual studio 2013\Projects\ProjetoRedes(Console)\ProjetoRedes(Console)\bin\Debug\ProjetoRedes(Console).pdb
+d:\users\gonga\documents\visual studio 2013\Projects\ProjetoRedes(Console)\ProjetoRedes(Console)\obj\Debug\ProjetoRedes(Console).csprojResolveAssemblyReference.cache
+d:\users\gonga\documents\visual studio 2013\Projects\ProjetoRedes(Console)\ProjetoRedes(Console)\obj\Debug\ProjetoRedes(Console).exe
+d:\users\gonga\documents\visual studio 2013\Projects\ProjetoRedes(Console)\ProjetoRedes(Console)\obj\Debug\ProjetoRedes(Console).pdb

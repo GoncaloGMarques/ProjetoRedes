@@ -125,7 +125,7 @@ namespace ProjetoRedes_Console_.Controller
                                         jogador.Barcos[i].Coordenadas[0, 1] = Int32.Parse(NumPart);
                                         MensagemRede networkMessageToSend = new MensagemRede()
                                         {
-                                            Coordenadas = new int {[jogador.Barcos[i].Coordenadas[0,0], jogador.Barcos[i].Coordenadas[0,1]};
+                                            Coordenadas = new[] { jogador.Barcos[i].Coordenadas[0, 0], jogador.Barcos[i].Coordenadas[0, 1] }
                                         };
 
                                         // Serialize the NetworkMessage object to a JSON string

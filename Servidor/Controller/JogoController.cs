@@ -23,13 +23,18 @@ namespace Servidor.Controller
         {
             foreach (Jogador jogador in StoreJogo.Instance.Jogo.PlayerList)
             {
-                int answer = jogador.BinaryReader.Read();
-                while (answer == 0)
+                string message = jogador.BinaryReader.ReadString();
+                while (message == null)
                 {
-                    answer = jogador.BinaryReader.Read();
+                    message = jogador.BinaryReader.ReadString();
                     Thread.Sleep(100);
                 }
-                
+
+
+                // Unserialize the JSON string to the object NetworkMessage
+                MensagemRede receivedNetworkMessage = JsonConvert.DeserializeObject<MensagemRede>(message);
+                Console.Write(receivedNetworkMessage.Coordenadas[0]);
+                Console.WriteLine(receivedNetworkMessage.Coordenadas[1]);
             }
         }
 

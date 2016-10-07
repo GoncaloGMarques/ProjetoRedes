@@ -17,7 +17,7 @@ namespace Common.Modelos
         public Jogador Jogador { get; set; }
 
         [JsonProperty("Coordenadas")]
-        public int[][] Coordenadas { get; set; }
+        public int[] Coordenadas { get; set; }
         public InstrucaoRede NetworkInstruction { get; set; }
     }
 }

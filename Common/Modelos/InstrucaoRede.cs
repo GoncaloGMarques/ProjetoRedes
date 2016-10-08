@@ -8,6 +8,7 @@ namespace Common.Modelos
 {
     public enum InstrucaoRede
     {
+        PlacingBoats,
         MakeMove,
         Wait,
         JogoEnded

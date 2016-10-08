@@ -9,7 +9,7 @@ namespace ProjetoRedes_Console_.Models
     class Grelha
     {
         private static char[] base26Chars = "ABCDEFGHIJ".ToCharArray();
-        public static void DesenharGrelha(char[] campo)
+        public static void DesenharGrelha(char[,] campo, char[,] campoInimigo)
         {
             for (int j = 0; j < 2; j++)
             {
@@ -34,7 +34,7 @@ namespace ProjetoRedes_Console_.Models
                     Console.Write(returnValue + "|");
                     for (int y = 0; y < 10; y++)
                     {
-                        Console.Write(" " + campo[campoIt] + " |");
+                        Console.Write(" " + campo[y,i] + " |");
                         campoIt++;
                     }
                     Console.Write("      ");

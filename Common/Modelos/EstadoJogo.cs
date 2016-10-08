@@ -11,7 +11,6 @@ namespace Common.Modelos
         ConnectionOpen,
         ConnectionClosed,
         JogoInitializing,
-        JogoPlacingBoats,
         JogoStarted,
         JogoEnded
     }

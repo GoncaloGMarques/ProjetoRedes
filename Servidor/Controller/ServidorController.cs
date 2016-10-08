@@ -85,11 +85,9 @@ namespace Servidor.Controller
                         // Define who plays first
                         _jogoController = new JogoController();
                         break;
-                    case EstadoJogo.JogoPlacingBoats:
-                        _jogoController.PlacingBoats();
-                        break;
                     case EstadoJogo.JogoStarted:
                         // All the game process should be processed here
+                        _jogoController.PlacingBoats();
                         //_jogoController.NextTurn();
                         //_jogoController.AskPlayerToPlay();
                         //_jogoController.ReceiveAnswer();

@@ -181,23 +181,11 @@ namespace ProjetoRedes_Console_.Controller
             for (int i = 0; i < 4; i++)
             {
                 final = false;
-                if (i != 0)
+                if (jogador.Barcos[i - 1].Colocado)
                 {
-
-                        String MensagemRedeRecebidaJsonString;
-                        MensagemRede MensagemRedeRecebida;
-                        MensagemRedeRecebidaJsonString = binaryReader.ReadString();
-
-                        // Unserialize the JSON string to the object NetworkMessage
-                        MensagemRedeRecebida =
-                            JsonConvert.DeserializeObject<MensagemRede>(MensagemRedeRecebidaJsonString);
-                        ultimoMapaJogador = MensagemRedeRecebida.CampoJogador;
-                        ultimoMapaInimigo = MensagemRedeRecebida.CampoInimigo;
-                    if (jogador.Barcos[i - 1].Colocado)
-                    {
-                        Grelha.DesenharGrelha(ultimoMapaJogador, ultimoMapaInimigo);
-                    }
+                    Grelha.DesenharGrelha(ultimoMapaJogador, ultimoMapaInimigo);
                 }
+
                 while (jogador.Barcos[i].Colocado == false)
                 {
                     if (!final)
@@ -223,8 +211,8 @@ namespace ProjetoRedes_Console_.Controller
                                 alphaPart = result2.Groups["Alpha"].Value;
                                 NumPart = result2.Groups["Numeric"].Value;
                             }
-                            jogador.Barcos[i].Coordenadas[0, 0] = ContarLetras(alphaPart);
-                            jogador.Barcos[i].Coordenadas[0, 1] = Int32.Parse(NumPart);
+                            jogador.Barcos[i].Coordenadas[0, 0] = Int32.Parse(NumPart);
+                            jogador.Barcos[i].Coordenadas[0, 1] = ContarLetras(alphaPart);
                             MensagemRede networkMessageToSend = new MensagemRede()
                             {
                                 Coordenadas =
@@ -265,8 +253,8 @@ namespace ProjetoRedes_Console_.Controller
                                 alphaPart = result2.Groups["Alpha"].Value;
                                 NumPart = result2.Groups["Numeric"].Value;
                             }
-                            int posicaoDesejadaX = ContarLetras(alphaPart);
-                            int posicaoDesejadaY = Int32.Parse(NumPart);
+                            int posicaoDesejadaX = Int32.Parse(NumPart);
+                            int posicaoDesejadaY = ContarLetras(alphaPart);
                             if ((posicaoDesejadaX == jogador.Barcos[i].Coordenadas[0, 0] &&
                                  (posicaoDesejadaY - (jogador.Barcos[i].Vida - 1) ==
                                   jogador.Barcos[i].Coordenadas[0, 1] ||
@@ -279,7 +267,12 @@ namespace ProjetoRedes_Console_.Controller
                                     jogador.Barcos[i].Coordenadas[y, 1] = jogador.Barcos[i].Coordenadas[0, 1] + y;
                                     MensagemRede networkMessageToSend = new MensagemRede()
                                     {
-                                        Coordenadas = new[] {posicaoDesejadaX, jogador.Barcos[i].Coordenadas[0, 1] + y}
+                                        Coordenadas =
+                                            new[]
+                                            {
+                                                jogador.Barcos[i].Coordenadas[y, 0],
+                                                jogador.Barcos[i].Coordenadas[y, 1]
+                                            }
                                     };
 
                                     // Serialize the NetworkMessage object to a JSON string
@@ -302,9 +295,13 @@ namespace ProjetoRedes_Console_.Controller
                                     jogador.Barcos[i].Coordenadas[x, 1] = posicaoDesejadaY;
                                     MensagemRede networkMessageToSend = new MensagemRede()
                                     {
-                                        Coordenadas = new[] {jogador.Barcos[i].Coordenadas[0, 0] + x, posicaoDesejadaY}
+                                        Coordenadas =
+                                            new[]
+                                            {
+                                                jogador.Barcos[i].Coordenadas[x, 0],
+                                                jogador.Barcos[i].Coordenadas[x, 1]
+                                            }
                                     };
-
                                     // Serialize the NetworkMessage object to a JSON string
                                     string networkMessageToSendJsonString =
                                         JsonConvert.SerializeObject(networkMessageToSend);
@@ -315,7 +312,6 @@ namespace ProjetoRedes_Console_.Controller
                             }
                             else
                             {
-
                                 Console.WriteLine(
                                     "Nao e possivel colocar o navio nessa posicao, tenha em atencao que o navio tem " +
                                     jogador.Barcos[i].Vida + " blocos de tamanho.");
@@ -330,7 +326,15 @@ namespace ProjetoRedes_Console_.Controller
                 }
             }
             Console.WriteLine("Passou");
+            String MensagemRedeRecebidaJsonString;
+            MensagemRede MensagemRedeRecebida;
+            MensagemRedeRecebidaJsonString = binaryReader.ReadString();
 
+            // Unserialize the JSON string to the object NetworkMessage
+            MensagemRedeRecebida =
+                JsonConvert.DeserializeObject<MensagemRede>(MensagemRedeRecebidaJsonString);
+            ultimoMapaJogador = MensagemRedeRecebida.CampoJogador;
+            ultimoMapaInimigo = MensagemRedeRecebida.CampoInimigo;
 
         }
     }

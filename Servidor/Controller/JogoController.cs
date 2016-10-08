@@ -59,9 +59,6 @@ namespace Servidor.Controller
 
                     jogador.BinaryWriter.Write(networkMessageToSendJsonString);
                 }
-                
-                    
-
             }
         }
 

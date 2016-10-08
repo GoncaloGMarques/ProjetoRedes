@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Sockets;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,25 +18,36 @@ namespace Servidor.Controller
         public JogoController()
         {
             StoreJogo.Instance.Jogo.PlayerList.Last().Turn = true;
-            StoreJogo.Instance.Jogo.EstadoJogo = EstadoJogo.JogoPlacingBoats;
+            StoreJogo.Instance.Jogo.EstadoJogo = EstadoJogo.JogoStarted;
+            foreach (Jogador jogador in StoreJogo.Instance.Jogo.PlayerList)
+            {
+                MensagemRede networkMessageToSend = new MensagemRede()
+                {
+                    NetworkInstruction = InstrucaoRede.PlacingBoats
+                };
+
+                // Serialize the NetworkMessage object to a JSON string
+                string networkMessageToSendJsonString = JsonConvert.SerializeObject(networkMessageToSend);
+
+                jogador.BinaryWriter.Write(networkMessageToSendJsonString);
+            }
         }
 
         public void PlacingBoats()
         {
             foreach (Jogador jogador in StoreJogo.Instance.Jogo.PlayerList)
             {
-                string message = jogador.BinaryReader.ReadString();
-                while (message == null)
+                if (jogador.TcpClient.GetStream().DataAvailable)
                 {
-                    message = jogador.BinaryReader.ReadString();
-                    Thread.Sleep(100);
+                    string message = jogador.BinaryReader.ReadString();
+
+                    // Unserialize the JSON string to the object NetworkMessage
+                    MensagemRede receivedNetworkMessage = JsonConvert.DeserializeObject<MensagemRede>(message);
+                    Console.Write(receivedNetworkMessage.Coordenadas[0]);
+                    Console.WriteLine(receivedNetworkMessage.Coordenadas[1]);
+                    jogador.CampoJogador[receivedNetworkMessage.Coordenadas[0], receivedNetworkMessage.Coordenadas[1]] =
+                        Char.Parse("+");
                 }
-
-
-                // Unserialize the JSON string to the object NetworkMessage
-                MensagemRede receivedNetworkMessage = JsonConvert.DeserializeObject<MensagemRede>(message);
-                Console.Write(receivedNetworkMessage.Coordenadas[0]);
-                Console.WriteLine(receivedNetworkMessage.Coordenadas[1]);
             }
         }
 

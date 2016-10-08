@@ -11,6 +11,7 @@ using Common.Modelos;
 using Newtonsoft.Json;
 using System.Text.RegularExpressions;
 using Common.Stores;
+using ProjetoRedes_Console_.Models;
 
 namespace ProjetoRedes_Console_.Controller
 {
@@ -23,14 +24,17 @@ namespace ProjetoRedes_Console_.Controller
             _estadoJogador = EstadoJogador.ReceivePlayerInformation;
             _instrucaoRede = InstrucaoRede.Wait;
         }
-            
+
+        private TcpClient tcpClient;
+        private BinaryReader binaryReader;
+        private BinaryWriter binaryWriter;
         public void StartClient()
         {
             // Start udp client
-            TcpClient tcpClient = new TcpClient();
+            tcpClient = new TcpClient();
             tcpClient.Connect(IPAddress.Parse("127.0.0.1"), 7777);
-            BinaryWriter binaryWriter = new BinaryWriter(tcpClient.GetStream());
-            BinaryReader binaryReader = new BinaryReader(tcpClient.GetStream());
+             binaryWriter = new BinaryWriter(tcpClient.GetStream());
+             binaryReader = new BinaryReader(tcpClient.GetStream());
 
             string MensagemRedeRecebidaJsonString;
             MensagemRede MensagemRedeRecebida;
@@ -75,7 +79,7 @@ namespace ProjetoRedes_Console_.Controller
 
                             // Unserialize the JSON string to the object NetworkMessage
                             MensagemRedeRecebida = JsonConvert.DeserializeObject<MensagemRede>(MensagemRedeRecebidaJsonString);
-
+                            
                             // Temporary and simple validation indicating 
                             // that we received a positive connected state
                             // from the server
@@ -83,127 +87,12 @@ namespace ProjetoRedes_Console_.Controller
                             {
                                 Console.WriteLine(MensagemRedeRecebida.Message);
                                 jogador = MensagemRedeRecebida.Jogador;
-                                _estadoJogador = EstadoJogador.JogoPlacingBoats;
+                                _estadoJogador = EstadoJogador.JogoStarted;
                                 InitBoats(jogador);
                             }
                             else
                             {
                                 Console.WriteLine("Not Connected");
-                            }
-                        }
-                        break;
-                    case EstadoJogador.JogoPlacingBoats:
-                        for (int i = 0; i < 4; i++)
-                        {
-                            bool final = false;
-                            while (jogador.Barcos[i].Colocado == false)
-                            {
-                                if (!final)
-                                {
-                                    Regex re1 = new Regex("(?<Alpha>[a-jA-J]+)(?<Numeric>[0-9]+)");
-                                    Regex re2 = new Regex("(?<Numeric>[0-9]+)(?<Alpha>[a-jA-J]+)");
-                                    string coord;
-                                    Console.WriteLine("Introduza as coordenadas iniciais do " + jogador.Barcos[i].Nome);
-                                    coord = Console.ReadLine();
-                                    Match result1 = re1.Match(coord);
-                                    Match result2 = re2.Match(coord);
-                                    string alphaPart = null;
-                                    string NumPart = null;
-                                    if (result2.Success || result1.Success)
-                                    {
-                                        if (result1.Success)
-                                        {
-                                            alphaPart = result1.Groups["Alpha"].Value;
-                                            NumPart = result1.Groups["Numeric"].Value;
-                                        }
-                                        else
-                                        {
-                                            alphaPart = result2.Groups["Alpha"].Value;
-                                            NumPart = result2.Groups["Numeric"].Value;
-                                        }
-                                        jogador.Barcos[i].Coordenadas[0, 0] = contarLetras(alphaPart);
-                                        jogador.Barcos[i].Coordenadas[0, 1] = Int32.Parse(NumPart);
-                                        MensagemRede networkMessageToSend = new MensagemRede()
-                                        {
-                                            Coordenadas = new[] { jogador.Barcos[i].Coordenadas[0, 0], jogador.Barcos[i].Coordenadas[0, 1] }
-                                        };
-
-                                        // Serialize the NetworkMessage object to a JSON string
-                                        string networkMessageToSendJsonString = JsonConvert.SerializeObject(networkMessageToSend);
-
-                                        binaryWriter.Write(networkMessageToSendJsonString);
-                                        final = true;
-                                    }
-                                    else
-                                    {
-                                        Console.WriteLine("Essa coordenada nao existe");
-                                    }
-                                }
-                                else
-                                {
-                                    Regex re1 = new Regex("(?<Alpha>[a-jA-J]+)(?<Numeric>[0-9]+)");
-                                    Regex re2 = new Regex("(?<Numeric>[0-9]+)(?<Alpha>[a-jA-J]+)");
-                                    string coord;
-                                    Console.WriteLine("Introduza as coordenadas do ultimo bloco do " + jogador.Barcos[i].Nome);
-                                    coord = Console.ReadLine();
-                                    Match result1 = re1.Match(coord);
-                                    Match result2 = re2.Match(coord);
-                                    string alphaPart = null;
-                                    string NumPart = null;
-                                    if (result2.Success || result1.Success)
-                                    {
-                                        if (result1.Success)
-                                        {
-                                            alphaPart = result1.Groups["Alpha"].Value;
-                                            NumPart = result1.Groups["Numeric"].Value;
-                                        }
-                                        else
-                                        {
-                                            alphaPart = result2.Groups["Alpha"].Value;
-                                            NumPart = result2.Groups["Numeric"].Value;
-                                        }
-                                        int posicaoDesejadaX = contarLetras(alphaPart);
-                                        int posicaoDesejadaY = Int32.Parse(NumPart);
-                                        if ((posicaoDesejadaX == jogador.Barcos[i].Coordenadas[0, 0] &&
-                                             (posicaoDesejadaY - (jogador.Barcos[i].Vida - 1) ==
-                                              jogador.Barcos[i].Coordenadas[0, 1] ||
-                                              posicaoDesejadaY + (jogador.Barcos[i].Vida - 1) ==
-                                              jogador.Barcos[i].Coordenadas[0, 1])))
-                                        {
-                                            for (int y = 1; y < jogador.Barcos[i].Vida; y++)
-                                            {
-                                                jogador.Barcos[i].Coordenadas[y, 0] = posicaoDesejadaX;
-                                                jogador.Barcos[i].Coordenadas[y, 1] = jogador.Barcos[i].Coordenadas[0, 1] + y;
-
-                                            }
-                                            jogador.Barcos[i].Colocado = true;
-                                        }
-                                        else if ((posicaoDesejadaY == jogador.Barcos[i].Coordenadas[0, 1] &&
-                                             (posicaoDesejadaX - (jogador.Barcos[i].Vida - 1) ==
-                                              jogador.Barcos[i].Coordenadas[0, 0] ||
-                                              posicaoDesejadaX + (jogador.Barcos[i].Vida - 1) ==
-                                              jogador.Barcos[i].Coordenadas[0, 0])))
-                                        {
-                                            for (int x = 1; x < jogador.Barcos[i].Vida; x++)
-                                            {
-                                                jogador.Barcos[i].Coordenadas[x, 0] = jogador.Barcos[i].Coordenadas[0, 0] + x;
-                                                jogador.Barcos[i].Coordenadas[x, 1] = posicaoDesejadaY;
-                                            }
-                                            jogador.Barcos[i].Colocado = true;
-                                        }
-                                        else
-                                        {
-                                            
-                                            Console.WriteLine("Nao e possivel colocar o navio nessa posicao, tenha em atencao que o navio tem "+jogador.Barcos[i].Vida+" blocos de tamanho.");
-                                        }
-                                        
-                                    }
-                                    else
-                                    {
-                                        Console.WriteLine("Essa coordenada nao existe");
-                                    }
-                                }
-
                             }
                         }
                         break;
@@ -221,6 +110,9 @@ namespace ProjetoRedes_Console_.Controller
 
                                 _instrucaoRede = MensagemRedeRecebida.NetworkInstruction;
                                 Console.WriteLine(MensagemRedeRecebida.Message);
+                                break;
+                            case InstrucaoRede.PlacingBoats:
+                                PlacingBoats(jogador);
                                 break;
                             case InstrucaoRede.MakeMove:
                                 int answer = int.Parse(Console.ReadLine());
@@ -260,7 +152,7 @@ namespace ProjetoRedes_Console_.Controller
             jogador.Barcos[3].Colocado = false;
         }
 
-        private int contarLetras(string letra)
+        private int ContarLetras(string letra)
         {
             int i;
             char[] base26CharsM = "ABCDEFGHIJ".ToCharArray();
@@ -273,6 +165,157 @@ namespace ProjetoRedes_Console_.Controller
                 }
             }
             return i;
+        }
+
+        private void PlacingBoats(Jogador jogador)
+        {
+            binaryWriter = new BinaryWriter(tcpClient.GetStream());
+            binaryReader = new BinaryReader(tcpClient.GetStream());
+            bool final;
+            for (int i = 0; i < 4; i++)
+            {
+                final = false;
+                while (jogador.Barcos[i].Colocado == false)
+                {
+                    if (!final)
+                    {
+                        Regex re1 = new Regex("(?<Alpha>[a-jA-J]+)(?<Numeric>[0-9]+)");
+                        Regex re2 = new Regex("(?<Numeric>[0-9]+)(?<Alpha>[a-jA-J]+)");
+                        string coord;
+                        Console.WriteLine("Introduza as coordenadas iniciais do " + jogador.Barcos[i].Nome);
+                        coord = Console.ReadLine();
+                        Match result1 = re1.Match(coord);
+                        Match result2 = re2.Match(coord);
+                        string alphaPart = null;
+                        string NumPart = null;
+                        if (result2.Success || result1.Success)
+                        {
+                            if (result1.Success)
+                            {
+                                alphaPart = result1.Groups["Alpha"].Value;
+                                NumPart = result1.Groups["Numeric"].Value;
+                            }
+                            else
+                            {
+                                alphaPart = result2.Groups["Alpha"].Value;
+                                NumPart = result2.Groups["Numeric"].Value;
+                            }
+                            jogador.Barcos[i].Coordenadas[0, 0] = ContarLetras(alphaPart);
+                            jogador.Barcos[i].Coordenadas[0, 1] = Int32.Parse(NumPart);
+                            MensagemRede networkMessageToSend = new MensagemRede()
+                            {
+                                Coordenadas =
+                                    new[] {jogador.Barcos[i].Coordenadas[0, 0], jogador.Barcos[i].Coordenadas[0, 1]}
+                            };
+
+                            // Serialize the NetworkMessage object to a JSON string
+                            string networkMessageToSendJsonString = JsonConvert.SerializeObject(networkMessageToSend);
+
+                            binaryWriter.Write(networkMessageToSendJsonString);
+                            final = true;
+                        }
+                        else
+                        {
+                            Console.WriteLine("Essa coordenada nao existe");
+                        }
+                    }
+                    else
+                    {
+                        Regex re1 = new Regex("(?<Alpha>[a-jA-J]+)(?<Numeric>[0-9]+)");
+                        Regex re2 = new Regex("(?<Numeric>[0-9]+)(?<Alpha>[a-jA-J]+)");
+                        string coord;
+                        Console.WriteLine("Introduza as coordenadas do ultimo bloco do " + jogador.Barcos[i].Nome);
+                        coord = Console.ReadLine();
+                        Match result1 = re1.Match(coord);
+                        Match result2 = re2.Match(coord);
+                        string alphaPart = null;
+                        string NumPart = null;
+                        if (result2.Success || result1.Success)
+                        {
+                            if (result1.Success)
+                            {
+                                alphaPart = result1.Groups["Alpha"].Value;
+                                NumPart = result1.Groups["Numeric"].Value;
+                            }
+                            else
+                            {
+                                alphaPart = result2.Groups["Alpha"].Value;
+                                NumPart = result2.Groups["Numeric"].Value;
+                            }
+                            int posicaoDesejadaX = ContarLetras(alphaPart);
+                            int posicaoDesejadaY = Int32.Parse(NumPart);
+                            if ((posicaoDesejadaX == jogador.Barcos[i].Coordenadas[0, 0] &&
+                                 (posicaoDesejadaY - (jogador.Barcos[i].Vida - 1) ==
+                                  jogador.Barcos[i].Coordenadas[0, 1] ||
+                                  posicaoDesejadaY + (jogador.Barcos[i].Vida - 1) ==
+                                  jogador.Barcos[i].Coordenadas[0, 1])))
+                            {
+                                for (int y = 1; y < jogador.Barcos[i].Vida; y++)
+                                {
+                                    jogador.Barcos[i].Coordenadas[y, 0] = posicaoDesejadaX;
+                                    jogador.Barcos[i].Coordenadas[y, 1] = jogador.Barcos[i].Coordenadas[0, 1] + y;
+                                    MensagemRede networkMessageToSend = new MensagemRede()
+                                    {
+                                        Coordenadas = new[] {posicaoDesejadaX, jogador.Barcos[i].Coordenadas[0, 1] + y}
+                                    };
+
+                                    // Serialize the NetworkMessage object to a JSON string
+                                    string networkMessageToSendJsonString =
+                                        JsonConvert.SerializeObject(networkMessageToSend);
+
+                                    binaryWriter.Write(networkMessageToSendJsonString);
+                                }
+                                jogador.Barcos[i].Colocado = true;
+                            }
+                            else if ((posicaoDesejadaY == jogador.Barcos[i].Coordenadas[0, 1] &&
+                                      (posicaoDesejadaX - (jogador.Barcos[i].Vida - 1) ==
+                                       jogador.Barcos[i].Coordenadas[0, 0] ||
+                                       posicaoDesejadaX + (jogador.Barcos[i].Vida - 1) ==
+                                       jogador.Barcos[i].Coordenadas[0, 0])))
+                            {
+                                for (int x = 1; x < jogador.Barcos[i].Vida; x++)
+                                {
+                                    jogador.Barcos[i].Coordenadas[x, 0] = jogador.Barcos[i].Coordenadas[0, 0] + x;
+                                    jogador.Barcos[i].Coordenadas[x, 1] = posicaoDesejadaY;
+                                    MensagemRede networkMessageToSend = new MensagemRede()
+                                    {
+                                        Coordenadas = new[] {jogador.Barcos[i].Coordenadas[0, 0] + x, posicaoDesejadaY}
+                                    };
+
+                                    // Serialize the NetworkMessage object to a JSON string
+                                    string networkMessageToSendJsonString =
+                                        JsonConvert.SerializeObject(networkMessageToSend);
+
+                                    binaryWriter.Write(networkMessageToSendJsonString);
+                                }
+                                jogador.Barcos[i].Colocado = true;
+                            }
+                            else
+                            {
+
+                                Console.WriteLine(
+                                    "Nao e possivel colocar o navio nessa posicao, tenha em atencao que o navio tem " +
+                                    jogador.Barcos[i].Vida + " blocos de tamanho.");
+                            }
+
+                        }
+                        else
+                        {
+                            Console.WriteLine("Essa coordenada nao existe");
+                        }
+                    }
+                }
+            }
+            Console.WriteLine("Passou");
+                String MensagemRedeRecebidaJsonString;
+                MensagemRede MensagemRedeRecebida;
+                MensagemRedeRecebidaJsonString = binaryReader.ReadString();
+
+                // Unserialize the JSON string to the object NetworkMessage
+                MensagemRedeRecebida = JsonConvert.DeserializeObject<MensagemRede>(MensagemRedeRecebidaJsonString);
+
+                Grelha.DesenharGrelha(MensagemRedeRecebida.CampoJogador, MensagemRedeRecebida.CampoInimigo);
+            
         }
     }
 }

@@ -11,6 +11,7 @@ using Common.Modelos;
 using Newtonsoft.Json;
 using System.Text.RegularExpressions;
 using Common.Stores;
+using Newtonsoft.Json.Serialization;
 using ProjetoRedes_Console_.Models;
 
 namespace ProjetoRedes_Console_.Controller
@@ -170,8 +171,8 @@ namespace ProjetoRedes_Console_.Controller
             return i;
         }
 
-        private char[,] ultimoMapaJogador;
-        private char[,] ultimoMapaInimigo;
+        private char[,] ultimoMapaJogador = new char[10,10];
+        private char[,] ultimoMapaInimigo = new char[10,10];
 
         private void PlacingBoats(Jogador jogador)
         {
@@ -181,9 +182,12 @@ namespace ProjetoRedes_Console_.Controller
             for (int i = 0; i < 4; i++)
             {
                 final = false;
-                if (jogador.Barcos[i - 1].Colocado)
+                if (i != 0)
                 {
-                    Grelha.DesenharGrelha(ultimoMapaJogador, ultimoMapaInimigo);
+                    if (jogador.Barcos[i - 1].Colocado)
+                    {
+                        Grelha.DesenharGrelha(ultimoMapaJogador, ultimoMapaInimigo);
+                    }
                 }
 
                 while (jogador.Barcos[i].Colocado == false)
@@ -213,16 +217,9 @@ namespace ProjetoRedes_Console_.Controller
                             }
                             jogador.Barcos[i].Coordenadas[0, 0] = Int32.Parse(NumPart);
                             jogador.Barcos[i].Coordenadas[0, 1] = ContarLetras(alphaPart);
-                            MensagemRede networkMessageToSend = new MensagemRede()
-                            {
-                                Coordenadas =
-                                    new[] {jogador.Barcos[i].Coordenadas[0, 0], jogador.Barcos[i].Coordenadas[0, 1]}
-                            };
-
-                            // Serialize the NetworkMessage object to a JSON string
-                            string networkMessageToSendJsonString = JsonConvert.SerializeObject(networkMessageToSend);
-
-                            binaryWriter.Write(networkMessageToSendJsonString);
+                            ultimoMapaJogador[
+                                            jogador.Barcos[i].Coordenadas[0, 0], jogador.Barcos[i].Coordenadas[0, 1]] =
+                                        char.Parse("+");
                             final = true;
                         }
                         else
@@ -265,21 +262,9 @@ namespace ProjetoRedes_Console_.Controller
                                 {
                                     jogador.Barcos[i].Coordenadas[y, 0] = posicaoDesejadaX;
                                     jogador.Barcos[i].Coordenadas[y, 1] = jogador.Barcos[i].Coordenadas[0, 1] + y;
-                                    MensagemRede networkMessageToSend = new MensagemRede()
-                                    {
-                                        Coordenadas =
-                                            new[]
-                                            {
-                                                jogador.Barcos[i].Coordenadas[y, 0],
-                                                jogador.Barcos[i].Coordenadas[y, 1]
-                                            }
-                                    };
-
-                                    // Serialize the NetworkMessage object to a JSON string
-                                    string networkMessageToSendJsonString =
-                                        JsonConvert.SerializeObject(networkMessageToSend);
-
-                                    binaryWriter.Write(networkMessageToSendJsonString);
+                                    ultimoMapaJogador[
+                                            jogador.Barcos[i].Coordenadas[y, 0], jogador.Barcos[i].Coordenadas[y, 1]] =
+                                        char.Parse("+");
                                 }
                                 jogador.Barcos[i].Colocado = true;
                             }
@@ -293,20 +278,10 @@ namespace ProjetoRedes_Console_.Controller
                                 {
                                     jogador.Barcos[i].Coordenadas[x, 0] = jogador.Barcos[i].Coordenadas[0, 0] + x;
                                     jogador.Barcos[i].Coordenadas[x, 1] = posicaoDesejadaY;
-                                    MensagemRede networkMessageToSend = new MensagemRede()
-                                    {
-                                        Coordenadas =
-                                            new[]
-                                            {
-                                                jogador.Barcos[i].Coordenadas[x, 0],
-                                                jogador.Barcos[i].Coordenadas[x, 1]
-                                            }
-                                    };
-                                    // Serialize the NetworkMessage object to a JSON string
-                                    string networkMessageToSendJsonString =
-                                        JsonConvert.SerializeObject(networkMessageToSend);
+                                    ultimoMapaJogador[
+                                            jogador.Barcos[i].Coordenadas[x, 0], jogador.Barcos[i].Coordenadas[x, 1]] =
+                                        char.Parse("+");
 
-                                    binaryWriter.Write(networkMessageToSendJsonString);
                                 }
                                 jogador.Barcos[i].Colocado = true;
                             }
@@ -326,8 +301,21 @@ namespace ProjetoRedes_Console_.Controller
                 }
             }
             Console.WriteLine("Passou");
-            String MensagemRedeRecebidaJsonString;
+            string MensagemRedeRecebidaJsonString;
             MensagemRede MensagemRedeRecebida;
+            
+            MensagemRedeRecebida = new MensagemRede()
+            {
+                CampoJogador = ultimoMapaJogador, 
+                CampoInimigo = ultimoMapaInimigo
+            };
+            // Serialize the NetworkMessage object to a JSON string
+            MensagemRedeRecebidaJsonString =
+                JsonConvert.SerializeObject(MensagemRedeRecebida);
+
+            binaryWriter.Write(MensagemRedeRecebidaJsonString);
+            
+
             MensagemRedeRecebidaJsonString = binaryReader.ReadString();
 
             // Unserialize the JSON string to the object NetworkMessage

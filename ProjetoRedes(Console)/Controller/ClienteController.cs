@@ -316,13 +316,13 @@ namespace ProjetoRedes_Console_.Controller
             binaryWriter.Write(MensagemRedeRecebidaJsonString);
             
 
-            MensagemRedeRecebidaJsonString = binaryReader.ReadString();
+            //MensagemRedeRecebidaJsonString = binaryReader.ReadString();
 
-            // Unserialize the JSON string to the object NetworkMessage
-            MensagemRedeRecebida =
-                JsonConvert.DeserializeObject<MensagemRede>(MensagemRedeRecebidaJsonString);
-            ultimoMapaJogador = MensagemRedeRecebida.CampoJogador;
-            ultimoMapaInimigo = MensagemRedeRecebida.CampoInimigo;
+            //// Unserialize the JSON string to the object NetworkMessage
+            //MensagemRedeRecebida =
+            //    JsonConvert.DeserializeObject<MensagemRede>(MensagemRedeRecebidaJsonString);
+            //ultimoMapaJogador = MensagemRedeRecebida.CampoJogador;
+            //ultimoMapaInimigo = MensagemRedeRecebida.CampoInimigo;
 
         }
     }

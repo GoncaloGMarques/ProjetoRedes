@@ -19,6 +19,7 @@ namespace ProjetoRedes_Console_.Controller
     {
         private EstadoJogador _estadoJogador;
         private InstrucaoRede _instrucaoRede;
+
         public ClienteController()
         {
             _estadoJogador = EstadoJogador.ReceivePlayerInformation;
@@ -28,13 +29,14 @@ namespace ProjetoRedes_Console_.Controller
         private TcpClient tcpClient;
         private BinaryReader binaryReader;
         private BinaryWriter binaryWriter;
+
         public void StartClient()
         {
             // Start udp client
             tcpClient = new TcpClient();
             tcpClient.Connect(IPAddress.Parse("127.0.0.1"), 7777);
-             binaryWriter = new BinaryWriter(tcpClient.GetStream());
-             binaryReader = new BinaryReader(tcpClient.GetStream());
+            binaryWriter = new BinaryWriter(tcpClient.GetStream());
+            binaryReader = new BinaryReader(tcpClient.GetStream());
 
             string MensagemRedeRecebidaJsonString;
             MensagemRede MensagemRedeRecebida;
@@ -47,7 +49,7 @@ namespace ProjetoRedes_Console_.Controller
             while (true)
             {
                 switch (_estadoJogador)
-                {  
+                {
                     case EstadoJogador.ReceivePlayerInformation:
                         Console.WriteLine("Input player name:");
                         // Here we initiate a new Player class with 
@@ -78,8 +80,9 @@ namespace ProjetoRedes_Console_.Controller
                             MensagemRedeRecebidaJsonString = binaryReader.ReadString();
 
                             // Unserialize the JSON string to the object NetworkMessage
-                            MensagemRedeRecebida = JsonConvert.DeserializeObject<MensagemRede>(MensagemRedeRecebidaJsonString);
-                            
+                            MensagemRedeRecebida =
+                                JsonConvert.DeserializeObject<MensagemRede>(MensagemRedeRecebidaJsonString);
+
                             // Temporary and simple validation indicating 
                             // that we received a positive connected state
                             // from the server
@@ -136,15 +139,15 @@ namespace ProjetoRedes_Console_.Controller
         {
             jogador.Barcos[0].Nome = "Porta Aviões";
             jogador.Barcos[0].Vida = 4;
-            jogador.Barcos[0].Coordenadas = new int[jogador.Barcos[0].Vida,2];//TODO fix this shit
+            jogador.Barcos[0].Coordenadas = new int[jogador.Barcos[0].Vida, 2]; //TODO fix this shit
             jogador.Barcos[0].Colocado = false;
             jogador.Barcos[1].Nome = "Fragata";
             jogador.Barcos[1].Vida = 3;
-            jogador.Barcos[1].Coordenadas = new int[jogador.Barcos[1].Vida, 2]; 
+            jogador.Barcos[1].Coordenadas = new int[jogador.Barcos[1].Vida, 2];
             jogador.Barcos[1].Colocado = false;
             jogador.Barcos[2].Nome = "Submarino";
             jogador.Barcos[2].Vida = 2;
-            jogador.Barcos[2].Coordenadas = new int[jogador.Barcos[2].Vida, 2]; 
+            jogador.Barcos[2].Coordenadas = new int[jogador.Barcos[2].Vida, 2];
             jogador.Barcos[2].Colocado = false;
             jogador.Barcos[3].Nome = "Patrulha";
             jogador.Barcos[3].Vida = 1;
@@ -159,13 +162,16 @@ namespace ProjetoRedes_Console_.Controller
             char[] base26Charsm = "abcdefghij".ToCharArray();
             for (i = 0; i < 10; i++)
             {
-                if (letra == base26CharsM[i % 10].ToString() || letra == base26Charsm[i % 10].ToString())
+                if (letra == base26CharsM[i%10].ToString() || letra == base26Charsm[i%10].ToString())
                 {
                     return i;
                 }
             }
             return i;
         }
+
+        private char[,] ultimoMapaJogador;
+        private char[,] ultimoMapaInimigo;
 
         private void PlacingBoats(Jogador jogador)
         {
@@ -175,6 +181,23 @@ namespace ProjetoRedes_Console_.Controller
             for (int i = 0; i < 4; i++)
             {
                 final = false;
+                if (i != 0)
+                {
+
+                        String MensagemRedeRecebidaJsonString;
+                        MensagemRede MensagemRedeRecebida;
+                        MensagemRedeRecebidaJsonString = binaryReader.ReadString();
+
+                        // Unserialize the JSON string to the object NetworkMessage
+                        MensagemRedeRecebida =
+                            JsonConvert.DeserializeObject<MensagemRede>(MensagemRedeRecebidaJsonString);
+                        ultimoMapaJogador = MensagemRedeRecebida.CampoJogador;
+                        ultimoMapaInimigo = MensagemRedeRecebida.CampoInimigo;
+                    if (jogador.Barcos[i - 1].Colocado)
+                    {
+                        Grelha.DesenharGrelha(ultimoMapaJogador, ultimoMapaInimigo);
+                    }
+                }
                 while (jogador.Barcos[i].Colocado == false)
                 {
                     if (!final)
@@ -307,15 +330,8 @@ namespace ProjetoRedes_Console_.Controller
                 }
             }
             Console.WriteLine("Passou");
-                String MensagemRedeRecebidaJsonString;
-                MensagemRede MensagemRedeRecebida;
-                MensagemRedeRecebidaJsonString = binaryReader.ReadString();
 
-                // Unserialize the JSON string to the object NetworkMessage
-                MensagemRedeRecebida = JsonConvert.DeserializeObject<MensagemRede>(MensagemRedeRecebidaJsonString);
 
-                Grelha.DesenharGrelha(MensagemRedeRecebida.CampoJogador, MensagemRedeRecebida.CampoInimigo);
-            
         }
     }
 }

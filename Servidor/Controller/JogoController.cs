@@ -47,7 +47,21 @@ namespace Servidor.Controller
                     Console.WriteLine(receivedNetworkMessage.Coordenadas[1]);
                     jogador.CampoJogador[receivedNetworkMessage.Coordenadas[0], receivedNetworkMessage.Coordenadas[1]] =
                         Char.Parse("+");
+
+                    MensagemRede networkMessageToSend = new MensagemRede()
+                    {
+                        CampoJogador = jogador.CampoJogador,
+                        CampoInimigo = jogador.CampoJogador,
+                    };
+
+                    // Serialize the NetworkMessage object to a JSON string
+                    string networkMessageToSendJsonString = JsonConvert.SerializeObject(networkMessageToSend);
+
+                    jogador.BinaryWriter.Write(networkMessageToSendJsonString);
                 }
+                
+                    
+
             }
         }
 

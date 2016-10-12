@@ -118,7 +118,7 @@ namespace ProjetoRedes_Console_.Controller
                             case InstrucaoRede.PlacingBoats:
                                 PlacingBoats(jogador);
                                 break;
-                            case InstrucaoRede.MakeMove:
+                            case InstrucaoRede.MakeMove: //TODO mudar servidor para comecar a receber tentativas
                                 int answer = int.Parse(Console.ReadLine());
                                 binaryWriter.Write(answer);
                                 _instrucaoRede = InstrucaoRede.Wait;
@@ -215,12 +215,20 @@ namespace ProjetoRedes_Console_.Controller
                                 alphaPart = result2.Groups["Alpha"].Value;
                                 NumPart = result2.Groups["Numeric"].Value;
                             }
-                            jogador.Barcos[i].Coordenadas[0, 0] = Int32.Parse(NumPart);
-                            jogador.Barcos[i].Coordenadas[0, 1] = ContarLetras(alphaPart);
-                            ultimoMapaJogador[
-                                            jogador.Barcos[i].Coordenadas[0, 0], jogador.Barcos[i].Coordenadas[0, 1]] =
-                                        char.Parse("+");
-                            final = true;
+                            if (ultimoMapaJogador[
+                                    Int32.Parse(NumPart), ContarLetras(alphaPart)] != char.Parse("+"))
+                            {
+                                jogador.Barcos[i].Coordenadas[0, 0] = Int32.Parse(NumPart);
+                                jogador.Barcos[i].Coordenadas[0, 1] = ContarLetras(alphaPart);
+                                ultimoMapaJogador[
+                                        jogador.Barcos[i].Coordenadas[0, 0], jogador.Barcos[i].Coordenadas[0, 1]] =
+                                    char.Parse("+");
+                                final = true;
+                            }
+                            else
+                            {
+                                Console.WriteLine("Essa posicao ja está ocupada");
+                            }
                         }
                         else
                         {
@@ -252,21 +260,38 @@ namespace ProjetoRedes_Console_.Controller
                             }
                             int posicaoDesejadaX = Int32.Parse(NumPart);
                             int posicaoDesejadaY = ContarLetras(alphaPart);
+                            bool possivel = true;
                             if ((posicaoDesejadaX == jogador.Barcos[i].Coordenadas[0, 0] &&
                                  (posicaoDesejadaY - (jogador.Barcos[i].Vida - 1) ==
                                   jogador.Barcos[i].Coordenadas[0, 1] ||
                                   posicaoDesejadaY + (jogador.Barcos[i].Vida - 1) ==
                                   jogador.Barcos[i].Coordenadas[0, 1])))
                             {
-                                for (int y = 1; y < jogador.Barcos[i].Vida; y++)
+                                for (int y = 1; y  < jogador.Barcos[i].Vida; y ++)
                                 {
-                                    jogador.Barcos[i].Coordenadas[y, 0] = posicaoDesejadaX;
-                                    jogador.Barcos[i].Coordenadas[y, 1] = jogador.Barcos[i].Coordenadas[0, 1] + y;
-                                    ultimoMapaJogador[
-                                            jogador.Barcos[i].Coordenadas[y, 0], jogador.Barcos[i].Coordenadas[y, 1]] =
-                                        char.Parse("+");
+                                    if (ultimoMapaJogador[
+                                            posicaoDesejadaX, jogador.Barcos[i].Coordenadas[0, 1] + y] == char.Parse("+"))
+                                    {
+                                        possivel = false;
+                                    }
                                 }
-                                jogador.Barcos[i].Colocado = true;
+                                if (possivel)
+                                {
+                                    for (int y = 1; y < jogador.Barcos[i].Vida; y++)
+                                    {
+                                        jogador.Barcos[i].Coordenadas[y, 0] = posicaoDesejadaX;
+                                        jogador.Barcos[i].Coordenadas[y, 1] = jogador.Barcos[i].Coordenadas[0, 1] + y;
+                                        ultimoMapaJogador[
+                                                jogador.Barcos[i].Coordenadas[y, 0], jogador.Barcos[i].Coordenadas[y, 1]
+                                            ] =
+                                            char.Parse("+");
+                                    }
+                                    jogador.Barcos[i].Colocado = true;
+                                }
+                                else
+                                {
+                                    Console.WriteLine("Essa posicao ja está ocupada");
+                                }
                             }
                             else if ((posicaoDesejadaY == jogador.Barcos[i].Coordenadas[0, 1] &&
                                       (posicaoDesejadaX - (jogador.Barcos[i].Vida - 1) ==
@@ -276,14 +301,30 @@ namespace ProjetoRedes_Console_.Controller
                             {
                                 for (int x = 1; x < jogador.Barcos[i].Vida; x++)
                                 {
-                                    jogador.Barcos[i].Coordenadas[x, 0] = jogador.Barcos[i].Coordenadas[0, 0] + x;
-                                    jogador.Barcos[i].Coordenadas[x, 1] = posicaoDesejadaY;
-                                    ultimoMapaJogador[
-                                            jogador.Barcos[i].Coordenadas[x, 0], jogador.Barcos[i].Coordenadas[x, 1]] =
-                                        char.Parse("+");
-
+                                    if (ultimoMapaJogador[
+                                            jogador.Barcos[i].Coordenadas[0, 0] + x, posicaoDesejadaY] == char.Parse("+"))
+                                    {
+                                        possivel = false;
+                                    }
                                 }
-                                jogador.Barcos[i].Colocado = true;
+                                if (possivel)
+                                {
+                                    for (int x = 1; x < jogador.Barcos[i].Vida; x++)
+                                    {
+                                        jogador.Barcos[i].Coordenadas[x, 0] = jogador.Barcos[i].Coordenadas[0, 0] + x;
+                                        jogador.Barcos[i].Coordenadas[x, 1] = posicaoDesejadaY;
+                                        ultimoMapaJogador[
+                                                jogador.Barcos[i].Coordenadas[x, 0], jogador.Barcos[i].Coordenadas[x, 1]
+                                            ] =
+                                            char.Parse("+");
+
+                                    }
+                                    jogador.Barcos[i].Colocado = true;
+                                }
+                                else
+                                {
+                                    Console.WriteLine("Essa posicao ja está ocupada");
+                                }
                             }
                             else
                             {

@@ -15,12 +15,12 @@ namespace Common.Modelos
         public bool Connected { get; set; }
         [JsonProperty("Player")]
         public Jogador Jogador { get; set; }
-        [JsonProperty("Coordenadas")]
-        public int[] Coordenadas { get; set; }
         [JsonProperty("CampoJogador")]
         public char[,] CampoJogador { get; set; }
         [JsonProperty("CampoInimigo")]
         public char[,] CampoInimigo { get; set; }
+        [JsonProperty("Pronto")]
+        public bool Pronto { get; set; }
         public InstrucaoRede NetworkInstruction { get; set; }
     }
 }

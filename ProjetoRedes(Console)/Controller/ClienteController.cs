@@ -24,7 +24,7 @@ namespace ProjetoRedes_Console_.Controller
         public ClienteController()
         {
             _estadoJogador = EstadoJogador.ReceivePlayerInformation;
-            _instrucaoRede = InstrucaoRede.Wait;
+            _instrucaoRede = InstrucaoRede.WaitConnection;
         }
 
         private TcpClient tcpClient;
@@ -100,9 +100,18 @@ namespace ProjetoRedes_Console_.Controller
                             }
                         }
                         break;
-                    case EstadoJogador.JogoStarted:
-                        switch (_instrucaoRede)
+                    case EstadoJogador.JogoStarted:   
+                    switch (_instrucaoRede)
                         {
+                            case InstrucaoRede.WaitConnection:
+                                MensagemRedeRecebidaJsonString = binaryReader.ReadString();
+
+                                // Unserialize the JSON string to the object NetworkMessage
+                                MensagemRedeRecebida =
+                                    JsonConvert.DeserializeObject<MensagemRede>(MensagemRedeRecebidaJsonString);
+                                _instrucaoRede = MensagemRedeRecebida.NetworkInstruction;
+                                Console.WriteLine(MensagemRedeRecebida.Message);
+                                break;
                             case InstrucaoRede.Wait:
                                 // We know that the server will send a JSON string
                                 // so we prepare the statement for it
@@ -111,7 +120,9 @@ namespace ProjetoRedes_Console_.Controller
                                 // Unserialize the JSON string to the object NetworkMessage
                                 MensagemRedeRecebida =
                                     JsonConvert.DeserializeObject<MensagemRede>(MensagemRedeRecebidaJsonString);
-
+                                ultimoMapaJogador = MensagemRedeRecebida.CampoJogador;
+                                ultimoMapaInimigo = MensagemRedeRecebida.CampoInimigo;
+                                Grelha.DesenharGrelha(ultimoMapaJogador, ultimoMapaInimigo); 
                                 _instrucaoRede = MensagemRedeRecebida.NetworkInstruction;
                                 Console.WriteLine(MensagemRedeRecebida.Message);
                                 break;
@@ -119,9 +130,31 @@ namespace ProjetoRedes_Console_.Controller
                                 PlacingBoats(jogador);
                                 break;
                             case InstrucaoRede.MakeMove: //TODO mudar servidor para comecar a receber tentativas
-                                int answer = int.Parse(Console.ReadLine());
-                                binaryWriter.Write(answer);
-                                _instrucaoRede = InstrucaoRede.Wait;
+                                Regex re1 = new Regex("(?<Alpha>[a-jA-J]+)(?<Numeric>[0-9]+)");
+                                Regex re2 = new Regex("(?<Numeric>[0-9]+)(?<Alpha>[a-jA-J]+)");
+                                string coord;
+                                coord = Console.ReadLine();
+                                Match result1 = re1.Match(coord);
+                                Match result2 = re2.Match(coord);
+                                if (result2.Success || result1.Success)
+                                {
+                                    MensagemRede mensagemRede = new MensagemRede()
+                                    {
+                                        Message = coord
+                                    };
+                                    string mensagemRedeJsonStrong = JsonConvert.SerializeObject(mensagemRede);
+                                    _instrucaoRede = InstrucaoRede.Wait;
+
+                                    binaryWriter.Write(mensagemRedeJsonStrong);
+                                }
+                                MensagemRedeRecebidaJsonString = binaryReader.ReadString();
+
+                                // Unserialize the JSON string to the object NetworkMessage
+                                MensagemRedeRecebida =
+                                    JsonConvert.DeserializeObject<MensagemRede>(MensagemRedeRecebidaJsonString);
+                                ultimoMapaJogador = MensagemRedeRecebida.CampoJogador;
+                                ultimoMapaInimigo = MensagemRedeRecebida.CampoInimigo;
+                                Grelha.DesenharGrelha(ultimoMapaJogador, ultimoMapaInimigo); 
                                 break;
                             case InstrucaoRede.JogoEnded:
                                 _estadoJogador = EstadoJogador.JogoEnded;
@@ -139,19 +172,19 @@ namespace ProjetoRedes_Console_.Controller
         private void InitBoats(Jogador jogador)
         {
             jogador.Barcos[0].Nome = "Porta Aviões";
-            jogador.Barcos[0].Vida = 4;
+            jogador.Barcos[0].Vida = 5;
             jogador.Barcos[0].Coordenadas = new int[jogador.Barcos[0].Vida, 2]; //TODO fix this shit
             jogador.Barcos[0].Colocado = false;
             jogador.Barcos[1].Nome = "Fragata";
-            jogador.Barcos[1].Vida = 3;
+            jogador.Barcos[1].Vida = 4;
             jogador.Barcos[1].Coordenadas = new int[jogador.Barcos[1].Vida, 2];
             jogador.Barcos[1].Colocado = false;
             jogador.Barcos[2].Nome = "Submarino";
-            jogador.Barcos[2].Vida = 2;
+            jogador.Barcos[2].Vida = 3;
             jogador.Barcos[2].Coordenadas = new int[jogador.Barcos[2].Vida, 2];
             jogador.Barcos[2].Colocado = false;
             jogador.Barcos[3].Nome = "Patrulha";
-            jogador.Barcos[3].Vida = 1;
+            jogador.Barcos[3].Vida = 2;
             jogador.Barcos[3].Coordenadas = new int[jogador.Barcos[3].Vida, 2];
             jogador.Barcos[3].Colocado = false;
         }
@@ -174,7 +207,7 @@ namespace ProjetoRedes_Console_.Controller
         private char[,] ultimoMapaJogador = new char[10,10];
         private char[,] ultimoMapaInimigo = new char[10,10];
 
-        private void PlacingBoats(Jogador jogador)
+        private void PlacingBoats(Jogador jogador) //todo escrever barcos ao contrario nao funciona (inicio:1d e fim 1a, ele escreve os para baixo)
         {
             binaryWriter = new BinaryWriter(tcpClient.GetStream());
             binaryReader = new BinaryReader(tcpClient.GetStream());
@@ -348,7 +381,8 @@ namespace ProjetoRedes_Console_.Controller
             MensagemRedeRecebida = new MensagemRede()
             {
                 CampoJogador = ultimoMapaJogador, 
-                CampoInimigo = ultimoMapaInimigo
+                CampoInimigo = ultimoMapaInimigo,
+                Pronto = true
             };
             // Serialize the NetworkMessage object to a JSON string
             MensagemRedeRecebidaJsonString =
@@ -356,6 +390,7 @@ namespace ProjetoRedes_Console_.Controller
 
             binaryWriter.Write(MensagemRedeRecebidaJsonString);
             
+            _instrucaoRede = InstrucaoRede.WaitConnection;
 
             //MensagemRedeRecebidaJsonString = binaryReader.ReadString();
 

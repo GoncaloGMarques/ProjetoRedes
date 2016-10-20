@@ -87,10 +87,18 @@ namespace Servidor.Controller
                         break;
                     case EstadoJogo.JogoStarted:
                         // All the game process should be processed here
-                        _jogoController.PlacingBoats();
-                        //_jogoController.NextTurn();
-                        //_jogoController.AskPlayerToPlay();
-                        //_jogoController.ReceiveAnswer();
+                        if (StoreJogo.Instance.Jogo.PlayerList.Last().ProntoJogador &&
+                            StoreJogo.Instance.Jogo.PlayerList.First().ProntoJogador)
+                        {
+                            _jogoController.NextTurn();
+                            _jogoController.AskPlayerToPlay();
+                            _jogoController.ReceiveAnswer();
+                        }
+                        else
+                        {
+                            _jogoController.PlacingBoats();
+                        }
+                        
                         break;
                     case EstadoJogo.JogoEnded:
                         // Notify all players that the game ended
@@ -147,7 +155,7 @@ namespace Servidor.Controller
                 Connected = true,
                 Message = "Welcome to the game!",
                 Jogador = player,
-                NetworkInstruction = InstrucaoRede.Wait
+                NetworkInstruction = InstrucaoRede.WaitConnection
             };
 
             // Serialize the NetworkMessage object to a JSON string

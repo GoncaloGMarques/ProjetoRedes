@@ -30,14 +30,29 @@ namespace ProjetoRedes_Console_.Models
                 returnValue = base26Chars[i % 20].ToString();
                 for (int j = 0; j < 2; j++)
                 {
-                    int campoIt = 0;
-                    Console.Write(returnValue + "|");
-                    for (int y = 0; y < 10; y++)
+                    if (j == 0)
                     {
-                        Console.Write(" " + campo[y,i] + " |");
-                        campoIt++;
+                        int campoIt = 0;
+                        Console.Write(returnValue + "|");
+                        for (int y = 0; y < 10; y++)
+                        {
+                            Console.Write(" " + campo[y, i] + " |");
+                            campoIt++;
+                        }
+                        Console.Write("      ");
+
                     }
-                    Console.Write("      ");
+                    if (j == 1)
+                    {
+                        int campoIt = 0;
+                        Console.Write(returnValue + "|");
+                        for (int y = 0; y < 10; y++)
+                        {
+                            Console.Write(" " + campoInimigo[y, i] + " |");
+                            campoIt++;
+                        }
+                    }
+
                 }
                 Console.Write("\n");
                 for (int j = 0; j < 2; j++)

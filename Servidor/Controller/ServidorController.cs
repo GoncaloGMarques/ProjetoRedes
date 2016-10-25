@@ -141,7 +141,8 @@ namespace Servidor.Controller
                 Turn = false,
                 TcpClient = tcpClient,
                 BinaryReader = binaryReader,
-                BinaryWriter = binaryWriter
+                BinaryWriter = binaryWriter,
+                Barcos = receivedNetworkMessage.Jogador.Barcos
             };
 
             // We add the player to the player list
@@ -173,6 +174,30 @@ namespace Servidor.Controller
             // Display some information to the server console
             Console.WriteLine("Player" + receivedNetworkMessage.Jogador.PlayerName + " entered the game");
             Console.WriteLine("Players " + StoreJogo.Instance.Jogo.PlayerList.Count + "/" + ServidorConfig.MaxPlayers);
+        }
+
+        private void InitBoats(Jogador jogador)
+        {
+            jogador.Barcos[0].Nome = "Porta Aviões";
+            jogador.Barcos[0].Vida = 5;
+            jogador.Barcos[0].Coordenadas = new int[jogador.Barcos[0].Vida, 2]; //TODO fix this shit
+            jogador.Barcos[0].Colocado = false;
+            jogador.Barcos[1].Nome = "Fragata";
+            jogador.Barcos[1].Vida = 4;
+            jogador.Barcos[1].Coordenadas = new int[jogador.Barcos[1].Vida, 2];
+            jogador.Barcos[1].Colocado = false;
+            jogador.Barcos[2].Nome = "Submarino";
+            jogador.Barcos[2].Vida = 3;
+            jogador.Barcos[2].Coordenadas = new int[jogador.Barcos[2].Vida, 2];
+            jogador.Barcos[2].Colocado = false;
+            jogador.Barcos[3].Nome = "Patrulha";
+            jogador.Barcos[3].Vida = 3;
+            jogador.Barcos[3].Coordenadas = new int[jogador.Barcos[3].Vida, 2];
+            jogador.Barcos[3].Colocado = false;
+            jogador.Barcos[4].Nome = "Torpedeiro";
+            jogador.Barcos[4].Vida = 2;
+            jogador.Barcos[4].Coordenadas = new int[jogador.Barcos[4].Vida, 2];
+            jogador.Barcos[4].Colocado = false;
         }
     }
 }

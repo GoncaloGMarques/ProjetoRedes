@@ -19,6 +19,8 @@ namespace Common.Modelos
         public char[,] CampoJogador { get; set; }
         [JsonProperty("CampoInimigo")]
         public char[,] CampoInimigo { get; set; }
+        [JsonProperty("Coordenada")]
+        public string Coordenada { get; set; }
         [JsonProperty("Pronto")]
         public bool Pronto { get; set; }
         public InstrucaoRede NetworkInstruction { get; set; }

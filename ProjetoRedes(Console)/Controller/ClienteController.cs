@@ -67,6 +67,7 @@ namespace ProjetoRedes_Console_.Controller
                             // called networkMessage and set the current
                             // player in that model so that we can send
                             // this object to the server
+                            InitBoats(jogador);
                             MensagemRede mensagemRede = new MensagemRede()
                             {
                                 Jogador = jogador
@@ -92,7 +93,6 @@ namespace ProjetoRedes_Console_.Controller
                                 Console.WriteLine(MensagemRedeRecebida.Message);
                                 jogador = MensagemRedeRecebida.Jogador;
                                 _estadoJogador = EstadoJogador.JogoStarted;
-                                InitBoats(jogador);
                             }
                             else
                             {
@@ -100,8 +100,8 @@ namespace ProjetoRedes_Console_.Controller
                             }
                         }
                         break;
-                    case EstadoJogador.JogoStarted:   
-                    switch (_instrucaoRede)
+                    case EstadoJogador.JogoStarted:
+                        switch (_instrucaoRede)
                         {
                             case InstrucaoRede.WaitConnection:
                                 MensagemRedeRecebidaJsonString = binaryReader.ReadString();
@@ -122,15 +122,21 @@ namespace ProjetoRedes_Console_.Controller
                                     JsonConvert.DeserializeObject<MensagemRede>(MensagemRedeRecebidaJsonString);
                                 ultimoMapaJogador = MensagemRedeRecebida.CampoJogador;
                                 ultimoMapaInimigo = MensagemRedeRecebida.CampoInimigo;
-                                Grelha.DesenharGrelha(ultimoMapaJogador, ultimoMapaInimigo); 
+                                Grelha.DesenharGrelha(ultimoMapaJogador, ultimoMapaInimigo);
                                 _instrucaoRede = MensagemRedeRecebida.NetworkInstruction;
                                 Console.WriteLine(MensagemRedeRecebida.Message);
                                 break;
                             case InstrucaoRede.PlacingBoats:
+                            {
                                 PlacingBoats(jogador);
+                                
                                 break;
+                            }
                             case InstrucaoRede.MakeMove: //TODO mudar servidor para comecar a receber tentativas
+
+                            {
                                 Regex re1 = new Regex("(?<Alpha>[a-jA-J]+)(?<Numeric>[0-9]+)");
+
                                 Regex re2 = new Regex("(?<Numeric>[0-9]+)(?<Alpha>[a-jA-J]+)");
                                 string coord;
                                 coord = Console.ReadLine();
@@ -154,8 +160,10 @@ namespace ProjetoRedes_Console_.Controller
                                     JsonConvert.DeserializeObject<MensagemRede>(MensagemRedeRecebidaJsonString);
                                 ultimoMapaJogador = MensagemRedeRecebida.CampoJogador;
                                 ultimoMapaInimigo = MensagemRedeRecebida.CampoInimigo;
-                                Grelha.DesenharGrelha(ultimoMapaJogador, ultimoMapaInimigo); 
+                                Grelha.DesenharGrelha(ultimoMapaJogador, ultimoMapaInimigo);
+                                Console.WriteLine(MensagemRedeRecebida.Message);
                                 break;
+                            }
                             case InstrucaoRede.JogoEnded:
                                 _estadoJogador = EstadoJogador.JogoEnded;
                                 break;
@@ -167,26 +175,6 @@ namespace ProjetoRedes_Console_.Controller
                         break;
                 }
             }
-        }
-
-        private void InitBoats(Jogador jogador)
-        {
-            jogador.Barcos[0].Nome = "Porta Aviões";
-            jogador.Barcos[0].Vida = 5;
-            jogador.Barcos[0].Coordenadas = new int[jogador.Barcos[0].Vida, 2]; //TODO fix this shit
-            jogador.Barcos[0].Colocado = false;
-            jogador.Barcos[1].Nome = "Fragata";
-            jogador.Barcos[1].Vida = 4;
-            jogador.Barcos[1].Coordenadas = new int[jogador.Barcos[1].Vida, 2];
-            jogador.Barcos[1].Colocado = false;
-            jogador.Barcos[2].Nome = "Submarino";
-            jogador.Barcos[2].Vida = 3;
-            jogador.Barcos[2].Coordenadas = new int[jogador.Barcos[2].Vida, 2];
-            jogador.Barcos[2].Colocado = false;
-            jogador.Barcos[3].Nome = "Patrulha";
-            jogador.Barcos[3].Vida = 2;
-            jogador.Barcos[3].Coordenadas = new int[jogador.Barcos[3].Vida, 2];
-            jogador.Barcos[3].Colocado = false;
         }
 
         private int ContarLetras(string letra)
@@ -204,6 +192,30 @@ namespace ProjetoRedes_Console_.Controller
             return i;
         }
 
+        private void InitBoats(Jogador jogador)
+        {
+            jogador.Barcos[0].Nome = "Porta Aviões";
+            jogador.Barcos[0].Vida = 5;
+            jogador.Barcos[0].Coordenadas = new int[jogador.Barcos[0].Vida, 2]; //TODO fix this shit
+            jogador.Barcos[0].Colocado = false;
+            jogador.Barcos[1].Nome = "Fragata";
+            jogador.Barcos[1].Vida = 4;
+            jogador.Barcos[1].Coordenadas = new int[jogador.Barcos[1].Vida, 2];
+            jogador.Barcos[1].Colocado = false;
+            jogador.Barcos[2].Nome = "Submarino";
+            jogador.Barcos[2].Vida = 3;
+            jogador.Barcos[2].Coordenadas = new int[jogador.Barcos[2].Vida, 2];
+            jogador.Barcos[2].Colocado = false;
+            jogador.Barcos[3].Nome = "Patrulha";
+            jogador.Barcos[3].Vida = 3;
+            jogador.Barcos[3].Coordenadas = new int[jogador.Barcos[3].Vida, 2];
+            jogador.Barcos[3].Colocado = false;
+            jogador.Barcos[4].Nome = "Torpedeiro";
+            jogador.Barcos[4].Vida = 2;
+            jogador.Barcos[4].Coordenadas = new int[jogador.Barcos[4].Vida, 2];
+            jogador.Barcos[4].Colocado = false;
+        }
+
         private char[,] ultimoMapaJogador = new char[10,10];
         private char[,] ultimoMapaInimigo = new char[10,10];
 
@@ -212,7 +224,7 @@ namespace ProjetoRedes_Console_.Controller
             binaryWriter = new BinaryWriter(tcpClient.GetStream());
             binaryReader = new BinaryReader(tcpClient.GetStream());
             bool final;
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < 5; i++)
             {
                 final = false;
                 if (i != 0)
@@ -382,7 +394,8 @@ namespace ProjetoRedes_Console_.Controller
             {
                 CampoJogador = ultimoMapaJogador, 
                 CampoInimigo = ultimoMapaInimigo,
-                Pronto = true
+                Pronto = true,
+                Jogador = jogador
             };
             // Serialize the NetworkMessage object to a JSON string
             MensagemRedeRecebidaJsonString =

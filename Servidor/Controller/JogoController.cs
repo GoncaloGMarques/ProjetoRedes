@@ -49,6 +49,7 @@ namespace Servidor.Controller
                     if (receivedNetworkMessage.Pronto)
                     {
                         jogador.ProntoJogador = true;
+                        jogador.Barcos = receivedNetworkMessage.Jogador.Barcos;
                     }
                 }
             }
@@ -123,7 +124,7 @@ namespace Servidor.Controller
                     Int32.Parse(NumPart), ContarLetras(alphaPart)] = char.Parse("X");
                 StoreJogo.Instance.Jogo.PlayerList.Find(p => p.Turn).CampoInimigo[
                     Int32.Parse(NumPart), ContarLetras(alphaPart)] = char.Parse("X");
-                Mensagem = "Pumba na beiça";
+                Mensagem = CheckPlayerLife(Int32.Parse(NumPart), ContarLetras(alphaPart));
             }
             else
             {
@@ -131,7 +132,7 @@ namespace Servidor.Controller
                     Int32.Parse(NumPart), ContarLetras(alphaPart)] = char.Parse("O");
                 StoreJogo.Instance.Jogo.PlayerList.Find(p => p.Turn).CampoInimigo[
                     Int32.Parse(NumPart), ContarLetras(alphaPart)] = char.Parse("O");
-                Mensagem = "Falhaste porco";
+                Mensagem = "Falhou!";
             }
             Console.WriteLine(StoreJogo.Instance.Jogo.PlayerList.Find(p => !p.Turn).PlayerName);
             MensagemRede networkMessageToSend = new MensagemRede()
@@ -155,6 +156,25 @@ namespace Servidor.Controller
             StoreJogo.Instance.Jogo.PlayerList.Find(p => !p.Turn).BinaryWriter.Write(networkMessageToSenndJsonString);
             
             // TODO continuar esta parte
+        }
+
+        private string CheckPlayerLife(int x, int y)
+        {
+            for (int n = 0; n < 5; n++)
+            {
+                for (int i = 0; i < StoreJogo.Instance.Jogo.PlayerList.Find(p => !p.Turn).Barcos[n].Vida; i++)
+                {
+                    if (StoreJogo.Instance.Jogo.PlayerList.Find(p => !p.Turn).Barcos[n].Coordenadas[i,0] == x && StoreJogo.Instance.Jogo.PlayerList.Find(p => !p.Turn).Barcos[n].Coordenadas[i,1] == y)
+                    {
+                        StoreJogo.Instance.Jogo.PlayerList.Find(p => !p.Turn).Barcos[n].Vida--;
+                        if (StoreJogo.Instance.Jogo.PlayerList.Find(p => !p.Turn).Barcos[n].Vida == 0)
+                        {
+                            return "Afundou o " + StoreJogo.Instance.Jogo.PlayerList.Find(p => !p.Turn).Barcos[n].Nome;
+                        }
+                    }
+                }
+            }
+            return "Acertou num navio"; //TODO VErificar se isto funciona!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         }
 
         private int ContarLetras(string letra)

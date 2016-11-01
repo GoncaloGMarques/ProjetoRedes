@@ -96,7 +96,7 @@ namespace ProjetoRedes_Console_.Controller
                             }
                             else
                             {
-                                Console.WriteLine("Not Connected");
+                                Console.WriteLine("Not Connected", ConsoleColor.DarkGreen);
                             }
                         }
                         break;
@@ -122,8 +122,9 @@ namespace ProjetoRedes_Console_.Controller
                                     JsonConvert.DeserializeObject<MensagemRede>(MensagemRedeRecebidaJsonString);
                                 ultimoMapaJogador = MensagemRedeRecebida.CampoJogador;
                                 ultimoMapaInimigo = MensagemRedeRecebida.CampoInimigo;
-                                Grelha.DesenharGrelha(ultimoMapaJogador, ultimoMapaInimigo);
                                 _instrucaoRede = MensagemRedeRecebida.NetworkInstruction;
+                                Grelha.DesenharGrelha(ultimoMapaJogador, ultimoMapaInimigo);
+                                
                                 Console.WriteLine(MensagemRedeRecebida.Message);
                                 break;
                             case InstrucaoRede.PlacingBoats:
@@ -132,8 +133,7 @@ namespace ProjetoRedes_Console_.Controller
                                 
                                 break;
                             }
-                            case InstrucaoRede.MakeMove: //TODO mudar servidor para comecar a receber tentativas
-
+                            case InstrucaoRede.MakeMove: 
                             {
                                 Regex re1 = new Regex("(?<Alpha>[a-jA-J]+)(?<Numeric>[0-9]+)");
 
@@ -170,7 +170,7 @@ namespace ProjetoRedes_Console_.Controller
                         }
 
                         break;
-                    case EstadoJogador.JogoEnded:
+                    case EstadoJogador.JogoEnded: //TODO acabar o jogo
                         Thread.Sleep(100);
                         break;
                 }
@@ -196,7 +196,7 @@ namespace ProjetoRedes_Console_.Controller
         {
             jogador.Barcos[0].Nome = "Porta Aviões";
             jogador.Barcos[0].Vida = 5;
-            jogador.Barcos[0].Coordenadas = new int[jogador.Barcos[0].Vida, 2]; //TODO fix this shit
+            jogador.Barcos[0].Coordenadas = new int[jogador.Barcos[0].Vida, 2]; 
             jogador.Barcos[0].Colocado = false;
             jogador.Barcos[1].Nome = "Fragata";
             jogador.Barcos[1].Vida = 4;
@@ -219,8 +219,9 @@ namespace ProjetoRedes_Console_.Controller
         private char[,] ultimoMapaJogador = new char[10,10];
         private char[,] ultimoMapaInimigo = new char[10,10];
 
-        private void PlacingBoats(Jogador jogador) //todo escrever barcos ao contrario nao funciona (inicio:1d e fim 1a, ele escreve os para baixo)
+        private void PlacingBoats(Jogador jogador) 
         {
+            Console.WriteLine("Para cancelar a posicao inicial de um barco, escreva 'Cancelar'");
             binaryWriter = new BinaryWriter(tcpClient.GetStream());
             binaryReader = new BinaryReader(tcpClient.GetStream());
             bool final;
@@ -314,24 +315,56 @@ namespace ProjetoRedes_Console_.Controller
                             {
                                 for (int y = 1; y  < jogador.Barcos[i].Vida; y ++)
                                 {
-                                    if (ultimoMapaJogador[
-                                            posicaoDesejadaX, jogador.Barcos[i].Coordenadas[0, 1] + y] == char.Parse("+"))
+                                    if (posicaoDesejadaY > jogador.Barcos[i].Coordenadas[0, 1])
                                     {
-                                        possivel = false;
+                                        if (ultimoMapaJogador[
+                                                posicaoDesejadaX, jogador.Barcos[i].Coordenadas[0, 1] + y] ==
+                                            char.Parse("+"))
+                                        {
+                                            possivel = false;
+                                        }
                                     }
+                                    else
+                                    {
+                                        if (ultimoMapaJogador[
+                                                posicaoDesejadaX, jogador.Barcos[i].Coordenadas[0, 1] - y] ==
+                                            char.Parse("+"))
+                                        {
+                                            possivel = false;
+                                        }
+                                    }
+
                                 }
                                 if (possivel)
                                 {
                                     for (int y = 1; y < jogador.Barcos[i].Vida; y++)
                                     {
-                                        jogador.Barcos[i].Coordenadas[y, 0] = posicaoDesejadaX;
-                                        jogador.Barcos[i].Coordenadas[y, 1] = jogador.Barcos[i].Coordenadas[0, 1] + y;
-                                        ultimoMapaJogador[
-                                                jogador.Barcos[i].Coordenadas[y, 0], jogador.Barcos[i].Coordenadas[y, 1]
-                                            ] =
-                                            char.Parse("+");
+                                        if (posicaoDesejadaY > jogador.Barcos[i].Coordenadas[0, 1])
+                                        {
+                                            jogador.Barcos[i].Coordenadas[y, 0] = posicaoDesejadaX;
+                                            jogador.Barcos[i].Coordenadas[y, 1] = jogador.Barcos[i].Coordenadas[0, 1] +
+                                                                                  y;
+                                            ultimoMapaJogador[
+                                                    jogador.Barcos[i].Coordenadas[y, 0],
+                                                    jogador.Barcos[i].Coordenadas[y, 1]
+                                                ] =
+                                                char.Parse("+");
+                                        }
+                                        else
+                                        {
+
+                                            jogador.Barcos[i].Coordenadas[y, 0] = posicaoDesejadaX;
+                                            jogador.Barcos[i].Coordenadas[y, 1] = jogador.Barcos[i].Coordenadas[0, 1] -
+                                                                                  y;
+                                            ultimoMapaJogador[
+                                                    jogador.Barcos[i].Coordenadas[y, 0],
+                                                    jogador.Barcos[i].Coordenadas[y, 1]
+                                                ] =
+                                                char.Parse("+");
+
+                                        }
+                                        jogador.Barcos[i].Colocado = true;
                                     }
-                                    jogador.Barcos[i].Colocado = true;
                                 }
                                 else
                                 {
@@ -344,24 +377,54 @@ namespace ProjetoRedes_Console_.Controller
                                        posicaoDesejadaX + (jogador.Barcos[i].Vida - 1) ==
                                        jogador.Barcos[i].Coordenadas[0, 0])))
                             {
+
                                 for (int x = 1; x < jogador.Barcos[i].Vida; x++)
                                 {
-                                    if (ultimoMapaJogador[
-                                            jogador.Barcos[i].Coordenadas[0, 0] + x, posicaoDesejadaY] == char.Parse("+"))
+                                    if (posicaoDesejadaX > jogador.Barcos[i].Coordenadas[0, 0])
                                     {
-                                        possivel = false;
+                                        if (ultimoMapaJogador[
+                                                jogador.Barcos[i].Coordenadas[0, 0] + x, posicaoDesejadaY] ==
+                                            char.Parse("+"))
+                                        {
+                                            possivel = false;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if (ultimoMapaJogador[
+                                                jogador.Barcos[i].Coordenadas[0, 0] - x, posicaoDesejadaY] ==
+                                            char.Parse("+"))
+                                        {
+                                            possivel = false;
+                                        }
                                     }
                                 }
                                 if (possivel)
                                 {
                                     for (int x = 1; x < jogador.Barcos[i].Vida; x++)
                                     {
-                                        jogador.Barcos[i].Coordenadas[x, 0] = jogador.Barcos[i].Coordenadas[0, 0] + x;
-                                        jogador.Barcos[i].Coordenadas[x, 1] = posicaoDesejadaY;
-                                        ultimoMapaJogador[
-                                                jogador.Barcos[i].Coordenadas[x, 0], jogador.Barcos[i].Coordenadas[x, 1]
-                                            ] =
-                                            char.Parse("+");
+                                        if (posicaoDesejadaX > jogador.Barcos[i].Coordenadas[0, 0])
+                                        {
+                                            jogador.Barcos[i].Coordenadas[x, 0] = jogador.Barcos[i].Coordenadas[0, 0] +
+                                                                                  x;
+                                            jogador.Barcos[i].Coordenadas[x, 1] = posicaoDesejadaY;
+                                            ultimoMapaJogador[
+                                                    jogador.Barcos[i].Coordenadas[x, 0],
+                                                    jogador.Barcos[i].Coordenadas[x, 1]
+                                                ] =
+                                                char.Parse("+");
+                                        }
+                                        else
+                                        {
+                                            jogador.Barcos[i].Coordenadas[x, 0] = jogador.Barcos[i].Coordenadas[0, 0] -
+                                                                                  x;
+                                            jogador.Barcos[i].Coordenadas[x, 1] = posicaoDesejadaY;
+                                            ultimoMapaJogador[
+                                                    jogador.Barcos[i].Coordenadas[x, 0],
+                                                    jogador.Barcos[i].Coordenadas[x, 1]
+                                                ] =
+                                                char.Parse("+");
+                                        }
 
                                     }
                                     jogador.Barcos[i].Colocado = true;
@@ -378,6 +441,13 @@ namespace ProjetoRedes_Console_.Controller
                                     jogador.Barcos[i].Vida + " blocos de tamanho.");
                             }
 
+                        }
+                        else if (coord == "cancelar" || coord == "Cancelar")
+                        {
+                            ultimoMapaJogador[
+                                    jogador.Barcos[i].Coordenadas[0, 0], jogador.Barcos[i].Coordenadas[0, 1]] =
+                                char.Parse("-");
+                            final = false;
                         }
                         else
                         {

@@ -106,6 +106,7 @@ namespace Servidor.Controller
                         // clear data models and repeat
                         // Maybe allow game to have a "payback" mode
                         Thread.Sleep(100);
+                        Console.WriteLine("tada");
                         break;
                 }
 
@@ -180,7 +181,7 @@ namespace Servidor.Controller
         {
             jogador.Barcos[0].Nome = "Porta Aviões";
             jogador.Barcos[0].Vida = 5;
-            jogador.Barcos[0].Coordenadas = new int[jogador.Barcos[0].Vida, 2]; //TODO fix this shit
+            jogador.Barcos[0].Coordenadas = new int[jogador.Barcos[0].Vida, 2]; 
             jogador.Barcos[0].Colocado = false;
             jogador.Barcos[1].Nome = "Fragata";
             jogador.Barcos[1].Vida = 4;

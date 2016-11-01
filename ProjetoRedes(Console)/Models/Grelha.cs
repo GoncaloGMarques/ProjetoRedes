@@ -16,8 +16,9 @@ namespace ProjetoRedes_Console_.Models
                 Console.Write("_");
                 Console.Write("| ");
                 for (int i = 0; i < 10; i++)
-                {
+                {   Console.ForegroundColor = ConsoleColor.DarkGreen; //todo dar cor as coisas e preencher o "mar"
                     Console.Write(i);
+                    Console.ResetColor();
                     Console.Write(" | ");
                 }
                 Console.Write("     ");

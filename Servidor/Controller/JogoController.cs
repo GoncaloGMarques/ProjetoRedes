@@ -162,19 +162,24 @@ namespace Servidor.Controller
         {
             for (int n = 0; n < 5; n++)
             {
-                for (int i = 0; i < StoreJogo.Instance.Jogo.PlayerList.Find(p => !p.Turn).Barcos[n].Vida; i++)
+                for (int i = 0; i < StoreJogo.Instance.Jogo.PlayerList.Find(p => !p.Turn).Barcos[n].Coordenadas.GetLength(0); i++)
                 {
                     if (StoreJogo.Instance.Jogo.PlayerList.Find(p => !p.Turn).Barcos[n].Coordenadas[i,0] == x && StoreJogo.Instance.Jogo.PlayerList.Find(p => !p.Turn).Barcos[n].Coordenadas[i,1] == y)
                     {
                         StoreJogo.Instance.Jogo.PlayerList.Find(p => !p.Turn).Barcos[n].Vida--;
                         if (StoreJogo.Instance.Jogo.PlayerList.Find(p => !p.Turn).Barcos[n].Vida == 0)
                         {
-                            return "Afundou o " + StoreJogo.Instance.Jogo.PlayerList.Find(p => !p.Turn).Barcos[n].Nome;
+                            StoreJogo.Instance.Jogo.PlayerList.Find(p => !p.Turn).Vida--;
+                            if (StoreJogo.Instance.Jogo.PlayerList.Find(p => !p.Turn).Vida == 0)
+                            {
+                                StoreJogo.Instance.Jogo.EstadoJogo = EstadoJogo.JogoEnded;
+                            }
+                            return "Afundou o " + StoreJogo.Instance.Jogo.PlayerList.Find(p => !p.Turn).Barcos[n].Nome+ " com " + StoreJogo.Instance.Jogo.PlayerList.Find(p => !p.Turn).Barcos[n].Coordenadas.GetLength(0)+" blocos de tamanho";
                         }
                     }
                 }
             }
-            return "Acertou num navio"; //TODO VErificar se isto funciona!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            return "Acertou num navio"; 
         }
 
         private int ContarLetras(string letra)

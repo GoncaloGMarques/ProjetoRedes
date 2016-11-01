@@ -19,7 +19,7 @@ namespace Common.Modelos
         public char[,] CampoInimigo = new char[10,10];
         public bool ProntoJogador = false;
         [JsonIgnore] 
-        public int Vida = 17;
+        public int Vida = 5;
         [JsonIgnore]
         public TcpClient TcpClient { get; set; }
         [JsonIgnore]

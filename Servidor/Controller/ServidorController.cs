@@ -63,7 +63,7 @@ namespace Servidor.Controller
                         // we would need a connection to notify the
                         // client that the connections are closed
                         // Thread.Sleep makes sure the thread "sleeps" for 100ms
-                        Thread.Sleep(100);
+                        Console.WriteLine("Fechou");
                         break;
                     case EstadoJogo.ConnectionOpen:
                         // Connection state is open, players may connect
@@ -84,21 +84,23 @@ namespace Servidor.Controller
                         // define the number that the player should try to guess
                         // Define who plays first
                         _jogoController = new JogoController();
+                        Thread checlThread = new Thread(new ThreadStart(CheckConnections));
+                        checlThread.Start();
                         break;
                     case EstadoJogo.JogoStarted:
                         // All the game process should be processed here
+                        CheckConnections();
                         if (StoreJogo.Instance.Jogo.PlayerList.Last().ProntoJogador &&
-                            StoreJogo.Instance.Jogo.PlayerList.First().ProntoJogador)
+                            StoreJogo.Instance.Jogo.PlayerList.First().ProntoJogador && StoreJogo.Instance.Jogo.EstadoJogo != EstadoJogo.ConnectionClosed)
                         {
                             _jogoController.NextTurn();
                             _jogoController.AskPlayerToPlay();
                             _jogoController.ReceiveAnswer();
                         }
-                        else
+                        else if (StoreJogo.Instance.Jogo.EstadoJogo != EstadoJogo.ConnectionClosed)
                         {
                             _jogoController.PlacingBoats();
                         }
-                        
                         break;
                     case EstadoJogo.JogoEnded:
                         // Notify all players that the game ended
@@ -111,6 +113,34 @@ namespace Servidor.Controller
                 }
 
             }
+        }
+
+        private void CheckConnections()
+        {
+            while (true)
+            {
+                foreach (Jogador jogador in StoreJogo.Instance.Jogo.PlayerList)
+                {
+                    if (jogador.TcpClient.Client.Poll(0, SelectMode.SelectRead))
+                    {
+                        byte[] buff = new byte[1];
+                        try
+                        {
+                            jogador.TcpClient.Client.Receive(buff, SocketFlags.Peek);
+                        }
+                        catch (SocketException)
+                        {
+                            StoreJogo.Instance.Jogo.EstadoJogo = EstadoJogo.ConnectionClosed;
+                            
+                        }
+                    }
+                }
+                if (StoreJogo.Instance.Jogo.EstadoJogo == EstadoJogo.ConnectionClosed)
+                {
+                    break;
+                }
+            }
+            
         }
 
         private void ProcessClient(object tcpClientObject)

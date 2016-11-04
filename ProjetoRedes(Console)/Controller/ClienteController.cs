@@ -129,8 +129,9 @@ namespace ProjetoRedes_Console_.Controller
                                 break;
                             case InstrucaoRede.PlacingBoats:
                             {
+                                ultimoMapaJogador = Grelha.InitCampoJogador();
+                                ultimoMapaInimigo = Grelha.InitCampoInimigo();
                                 PlacingBoats(jogador);
-                                
                                 break;
                             }
                             case InstrucaoRede.MakeMove: 
@@ -216,8 +217,8 @@ namespace ProjetoRedes_Console_.Controller
             jogador.Barcos[4].Colocado = false;
         }
 
-        private char[,] ultimoMapaJogador = new char[10,10];
-        private char[,] ultimoMapaInimigo = new char[10,10];
+        private char[,] ultimoMapaJogador = new char[10, 10];
+        private char[,] ultimoMapaInimigo = new char[10, 10];
 
         private void PlacingBoats(Jogador jogador) 
         {

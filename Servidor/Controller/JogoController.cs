@@ -46,6 +46,7 @@ namespace Servidor.Controller
                     // Unserialize the JSON string to the object NetworkMessage
                     MensagemRede receivedNetworkMessage = JsonConvert.DeserializeObject<MensagemRede>(message);
                     jogador.CampoJogador = receivedNetworkMessage.CampoJogador;
+                    jogador.CampoInimigo = receivedNetworkMessage.CampoInimigo;
                     if (receivedNetworkMessage.Pronto)
                     {
                         jogador.ProntoJogador = true;

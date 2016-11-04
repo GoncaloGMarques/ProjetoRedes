@@ -28,16 +28,27 @@ namespace ProjetoRedes_Console_.Models
             string returnValue = null;
             for (int i = 0; i < 10; i++)
             {
+                Console.ForegroundColor = ConsoleColor.DarkGreen;
                 returnValue = base26Chars[i % 20].ToString();
+                Console.ResetColor();
                 for (int j = 0; j < 2; j++)
                 {
                     if (j == 0)
                     {
                         int campoIt = 0;
-                        Console.Write(returnValue + "|");
+                        Console.Write(returnValue);
                         for (int y = 0; y < 10; y++)
                         {
-                            Console.Write(" " + campo[y, i] + " |");
+                            Console.Write("| ");
+                            if (campo[y, i] == Char.Parse("+"))
+                            { Console.ForegroundColor = ConsoleColor.Red; }
+                            if (campo[y, i] == Char.Parse("~"))
+                            { Console.ForegroundColor = ConsoleColor.Blue; }
+                            if (campo[y, i] == Char.Parse("X"))
+                            { Console.ForegroundColor = ConsoleColor.Red; }
+                            Console.Write(campo[y, i]);
+                            Console.ResetColor();
+                            Console.Write(" ");
                             campoIt++;
                         }
                         Console.Write("      ");
@@ -49,7 +60,14 @@ namespace ProjetoRedes_Console_.Models
                         Console.Write(returnValue + "|");
                         for (int y = 0; y < 10; y++)
                         {
-                            Console.Write(" " + campoInimigo[y, i] + " |");
+                            Console.Write("| ");
+                            if (campoInimigo[y, i] == Char.Parse("X"))
+                            { Console.ForegroundColor = ConsoleColor.Red; }
+                            if (campoInimigo[y, i] == Char.Parse("~"))
+                            { Console.ForegroundColor = ConsoleColor.Blue; }
+                            Console.Write(campoInimigo[y, i]);
+                            Console.ResetColor();
+                            Console.Write(" ");
                             campoIt++;
                         }
                     }
@@ -67,6 +85,31 @@ namespace ProjetoRedes_Console_.Models
                 Console.Write("\n");
 
             }
+        }
+
+        public static char[,] InitCampoJogador()
+        {
+            char[,] campo = new char[10,10];
+            for (int i = 0; i < 10; i++)
+            {
+                for (int j = 0; j < 10; j++)
+                {
+                    campo[i, j] = Char.Parse("~");
+                }
+            }
+            return campo;
+        }
+        public static char[,] InitCampoInimigo()
+        {
+            char[,] campo = new char[10, 10];
+            for (int i = 0; i < 10; i++)
+            {
+                for (int j = 0; j < 10; j++)
+                {
+                    campo[i, j] = Char.Parse("~");
+                }
+            }
+            return campo;
         }
     }
 }

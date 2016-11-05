@@ -39,7 +39,7 @@ namespace Servidor.Controller
         {
             foreach (Jogador jogador in StoreJogo.Instance.Jogo.PlayerList)
             {
-                if (jogador.TcpClient.GetStream().DataAvailable)
+                if (jogador.TcpClient.Connected && jogador.TcpClient.GetStream().DataAvailable)
                 {
                     string message = jogador.BinaryReader.ReadString();
 

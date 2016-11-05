@@ -93,22 +93,23 @@ namespace ProjetoRedes_Console_.Controller
                                 Console.WriteLine(MensagemRedeRecebida.Message);
                                 jogador = MensagemRedeRecebida.Jogador;
                                 _estadoJogador = EstadoJogador.JogoStarted;
+                                ultimoMapaJogador = Grelha.InitCampoJogador();
+                                ultimoMapaInimigo = Grelha.InitCampoInimigo();
                             }
                             else
                             {
-                                Console.WriteLine("Not Connected", ConsoleColor.DarkGreen);
+                                Console.WriteLine("Not Connected");
                             }
                         }
                         break;
                     case EstadoJogador.JogoStarted:
-                        switch (_instrucaoRede)
+                    switch (_instrucaoRede)
                         {
                             case InstrucaoRede.WaitConnection:
-                                MensagemRedeRecebidaJsonString = binaryReader.ReadString();
-
                                 // Unserialize the JSON string to the object NetworkMessage
+                                MensagemRedeRecebidaJsonString = binaryReader.ReadString();
                                 MensagemRedeRecebida =
-                                    JsonConvert.DeserializeObject<MensagemRede>(MensagemRedeRecebidaJsonString);
+                                        JsonConvert.DeserializeObject<MensagemRede>(MensagemRedeRecebidaJsonString);
                                 _instrucaoRede = MensagemRedeRecebida.NetworkInstruction;
                                 Console.WriteLine(MensagemRedeRecebida.Message);
                                 break;
@@ -116,7 +117,6 @@ namespace ProjetoRedes_Console_.Controller
                                 // We know that the server will send a JSON string
                                 // so we prepare the statement for it
                                 MensagemRedeRecebidaJsonString = binaryReader.ReadString();
-
                                 // Unserialize the JSON string to the object NetworkMessage
                                 MensagemRedeRecebida =
                                     JsonConvert.DeserializeObject<MensagemRede>(MensagemRedeRecebidaJsonString);
@@ -124,13 +124,10 @@ namespace ProjetoRedes_Console_.Controller
                                 ultimoMapaInimigo = MensagemRedeRecebida.CampoInimigo;
                                 _instrucaoRede = MensagemRedeRecebida.NetworkInstruction;
                                 Grelha.DesenharGrelha(ultimoMapaJogador, ultimoMapaInimigo);
-                                
                                 Console.WriteLine(MensagemRedeRecebida.Message);
                                 break;
                             case InstrucaoRede.PlacingBoats:
                             {
-                                ultimoMapaJogador = Grelha.InitCampoJogador();
-                                ultimoMapaInimigo = Grelha.InitCampoInimigo();
                                 PlacingBoats(jogador);
                                 break;
                             }
@@ -172,7 +169,15 @@ namespace ProjetoRedes_Console_.Controller
 
                         break;
                     case EstadoJogador.JogoEnded: //TODO acabar o jogo
-                        Thread.Sleep(100);
+                        MensagemRedeRecebidaJsonString = binaryReader.ReadString();
+
+                                // Unserialize the JSON string to the object NetworkMessage
+                                MensagemRedeRecebida =
+                                    JsonConvert.DeserializeObject<MensagemRede>(MensagemRedeRecebidaJsonString);
+                                ultimoMapaJogador = MensagemRedeRecebida.CampoJogador;
+                                ultimoMapaInimigo = MensagemRedeRecebida.CampoInimigo;
+                                Grelha.DesenharGrelha(ultimoMapaJogador, ultimoMapaInimigo);
+                                Console.WriteLine(MensagemRedeRecebida.Message);
                         break;
                 }
             }
@@ -237,7 +242,7 @@ namespace ProjetoRedes_Console_.Controller
                     }
                 }
 
-                while (jogador.Barcos[i].Colocado == false)
+                while (jogador.Barcos[i].Colocado == false && _instrucaoRede != InstrucaoRede.WaitConnection)
                 {
                     if (!final)
                     {

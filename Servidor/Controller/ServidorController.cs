@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Runtime.Remoting.Contexts;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -63,12 +64,11 @@ namespace Servidor.Controller
                         // we would need a connection to notify the
                         // client that the connections are closed
                         // Thread.Sleep makes sure the thread "sleeps" for 100ms
-                        Console.WriteLine("Fechou");
                         break;
                     case EstadoJogo.ConnectionOpen:
                         // Connection state is open, players may connect
                         // to the server and inform the server of their information
-                        if (StoreJogo.Instance.Jogo.ConnectingPlayers <ServidorConfig.MaxPlayers - 1)
+                        if (StoreJogo.Instance.Jogo.ConnectingPlayers < ServidorConfig.MaxPlayers - 1)
                         {
                             TcpClient tcpClient = tcpListener.AcceptTcpClient();
                             Thread newThread = new Thread(new ParameterizedThreadStart(ProcessClient));
@@ -89,9 +89,9 @@ namespace Servidor.Controller
                         break;
                     case EstadoJogo.JogoStarted:
                         // All the game process should be processed here
-                        CheckConnections();
                         if (StoreJogo.Instance.Jogo.PlayerList.Last().ProntoJogador &&
-                            StoreJogo.Instance.Jogo.PlayerList.First().ProntoJogador && StoreJogo.Instance.Jogo.EstadoJogo != EstadoJogo.ConnectionClosed)
+                            StoreJogo.Instance.Jogo.PlayerList.First().ProntoJogador &&
+                            StoreJogo.Instance.Jogo.EstadoJogo != EstadoJogo.ConnectionClosed)
                         {
                             _jogoController.NextTurn();
                             _jogoController.AskPlayerToPlay();
@@ -107,11 +107,32 @@ namespace Servidor.Controller
                         // Show some stats?
                         // clear data models and repeat
                         // Maybe allow game to have a "payback" mode
+
                         Thread.Sleep(100);
-                        Console.WriteLine("tada");
+                        Console.WriteLine("tada"); //todo acabar jogo
+                        MensagemRede mensagemRede = new MensagemRede()
+                        {
+                            CampoJogador = StoreJogo.Instance.Jogo.PlayerList.Find(j => j.Vida == 0).CampoJogador,
+                            CampoInimigo = StoreJogo.Instance.Jogo.PlayerList.Find(j => j.Vida != 0).CampoJogador,
+                            Message =
+                                "O jogador " + StoreJogo.Instance.Jogo.PlayerList.Find(j => j.Vida != 0).PlayerName +
+                                "ganhou!"
+                        };
+                        string memensagemRedeString = JsonConvert.SerializeObject(mensagemRede);
+                        StoreJogo.Instance.Jogo.PlayerList.Find(j => j.Vida == 0).BinaryWriter.Write(memensagemRedeString);
+
+                        mensagemRede = new MensagemRede()
+                        {
+                            CampoJogador = StoreJogo.Instance.Jogo.PlayerList.Find(j => j.Vida != 0).CampoJogador,
+                            CampoInimigo = StoreJogo.Instance.Jogo.PlayerList.Find(j => j.Vida == 0).CampoJogador,
+                            Message =
+                                "Ganhaste!"
+                        };
+                        memensagemRedeString = JsonConvert.SerializeObject(mensagemRede);
+                        StoreJogo.Instance.Jogo.PlayerList.Find(j => j.Vida != 0).BinaryWriter.Write(memensagemRedeString);
                         break;
                 }
-
+                
             }
         }
 
@@ -130,12 +151,25 @@ namespace Servidor.Controller
                         }
                         catch (SocketException)
                         {
-                            StoreJogo.Instance.Jogo.EstadoJogo = EstadoJogo.ConnectionClosed;
-                            
+                            StoreJogo.Instance.Jogo.EstadoJogo = EstadoJogo.ConnectionOpen;
+                            StoreJogo.Instance.Jogo.ConnectingPlayers--;
+                            MensagemRede mensagemRede = new MensagemRede()
+                            {
+                                Message =
+                                    StoreJogo.Instance.Jogo.PlayerList.Find(j => !j.TcpClient.Connected).PlayerName +
+                                    " fechou a conexao, por favor aguarde.",
+                                NetworkInstruction = InstrucaoRede.WaitConnection
+
+                            };
+                            string mensagemRedeString = JsonConvert.SerializeObject(mensagemRede);
+                            StoreJogo.Instance.Jogo.PlayerList.Find(j => j.TcpClient.Connected).BinaryWriter.Write(mensagemRedeString);
+                            StoreJogo.Instance.Jogo.PlayerList.Remove(StoreJogo.Instance.Jogo.PlayerList.Find(j=> j== jogador));
+                            Console.WriteLine("Players " + StoreJogo.Instance.Jogo.PlayerList.Count + "/" + ServidorConfig.MaxPlayers);
+                            break;
                         }
                     }
                 }
-                if (StoreJogo.Instance.Jogo.EstadoJogo == EstadoJogo.ConnectionClosed)
+                if (StoreJogo.Instance.Jogo.EstadoJogo == EstadoJogo.ConnectionOpen)
                 {
                     break;
                 }

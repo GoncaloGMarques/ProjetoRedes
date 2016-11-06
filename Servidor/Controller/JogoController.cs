@@ -75,7 +75,6 @@ namespace Servidor.Controller
         {
             MensagemRede networkMessageToSend = new MensagemRede()
             {
-                Message = "Please make a guess!",
                 NetworkInstruction = InstrucaoRede.MakeMove
             };
 

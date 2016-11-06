@@ -40,8 +40,8 @@ namespace ProjetoRedes_Console_.Controller
             binaryReader = new BinaryReader(tcpClient.GetStream());
 
             string MensagemRedeRecebidaJsonString;
-            MensagemRede MensagemRedeRecebida;
             Jogador jogador = null;
+            MensagemRede MensagemRedeRecebida;
             // This while::cycle works like a game cycle.
             // A boolean should take it's place so that the client
             // can exit the cycle when it wants.
@@ -103,13 +103,14 @@ namespace ProjetoRedes_Console_.Controller
                         }
                         break;
                     case EstadoJogador.JogoStarted:
-                    switch (_instrucaoRede)
+                        switch (_instrucaoRede)
                         {
                             case InstrucaoRede.WaitConnection:
+
                                 // Unserialize the JSON string to the object NetworkMessage
                                 MensagemRedeRecebidaJsonString = binaryReader.ReadString();
                                 MensagemRedeRecebida =
-                                        JsonConvert.DeserializeObject<MensagemRede>(MensagemRedeRecebidaJsonString);
+                                    JsonConvert.DeserializeObject<MensagemRede>(MensagemRedeRecebidaJsonString);
                                 _instrucaoRede = MensagemRedeRecebida.NetworkInstruction;
                                 Console.WriteLine(MensagemRedeRecebida.Message);
                                 break;
@@ -120,65 +121,101 @@ namespace ProjetoRedes_Console_.Controller
                                 // Unserialize the JSON string to the object NetworkMessage
                                 MensagemRedeRecebida =
                                     JsonConvert.DeserializeObject<MensagemRede>(MensagemRedeRecebidaJsonString);
-                                ultimoMapaJogador = MensagemRedeRecebida.CampoJogador;
-                                ultimoMapaInimigo = MensagemRedeRecebida.CampoInimigo;
+                                if (MensagemRedeRecebida.CampoJogador != null)
+                                {
+                                    ultimoMapaJogador = MensagemRedeRecebida.CampoJogador;
+                                    ultimoMapaInimigo = MensagemRedeRecebida.CampoInimigo;
+                                    
+                                    Grelha.DesenharGrelha(ultimoMapaJogador, ultimoMapaInimigo);
+                                }
                                 _instrucaoRede = MensagemRedeRecebida.NetworkInstruction;
-                                Grelha.DesenharGrelha(ultimoMapaJogador, ultimoMapaInimigo);
                                 Console.WriteLine(MensagemRedeRecebida.Message);
                                 break;
+
                             case InstrucaoRede.PlacingBoats:
-                            {
+
                                 PlacingBoats(jogador);
+                                _instrucaoRede = InstrucaoRede.Wait;
                                 break;
-                            }
-                            case InstrucaoRede.MakeMove: 
-                            {
-                                Regex re1 = new Regex("(?<Alpha>[a-jA-J]+)(?<Numeric>[0-9]+)");
 
-                                Regex re2 = new Regex("(?<Numeric>[0-9]+)(?<Alpha>[a-jA-J]+)");
-                                string coord;
-                                coord = Console.ReadLine();
-                                Match result1 = re1.Match(coord);
-                                Match result2 = re2.Match(coord);
-                                if (result2.Success || result1.Success)
+                            case InstrucaoRede.MakeMove:
+                                bool enviado = false;
+                                while (!enviado)
                                 {
-                                    MensagemRede mensagemRede = new MensagemRede()
+                                    Console.WriteLine("Onde quer atacar?");
+                                    Regex re1 = new Regex("(?<Alpha>[a-jA-J]+)(?<Numeric>[0-9]+)");
+
+                                    Regex re2 = new Regex("(?<Numeric>[0-9]+)(?<Alpha>[a-jA-J]+)");
+                                    string coord;
+                                    coord = Console.ReadLine();
+                                    Match result1 = re1.Match(coord);
+                                    Match result2 = re2.Match(coord);
+                                    string alphaPart = null;
+                                    string NumPart = null;
+
+                                    if (result1.Success)
                                     {
-                                        Message = coord
-                                    };
-                                    string mensagemRedeJsonStrong = JsonConvert.SerializeObject(mensagemRede);
-                                    _instrucaoRede = InstrucaoRede.Wait;
+                                        alphaPart = result1.Groups["Alpha"].Value;
+                                        NumPart = result1.Groups["Numeric"].Value;
+                                    }
+                                    else
+                                    {
+                                        alphaPart = result2.Groups["Alpha"].Value;
+                                        NumPart = result2.Groups["Numeric"].Value;
+                                    }
+                                    if ((result2.Success || result1.Success) &&
+                                        ultimoMapaInimigo[Int32.Parse(NumPart), ContarLetras(alphaPart)] ==
+                                        char.Parse("~"))
+                                    {
+                                        MensagemRede mensagemRede = new MensagemRede()
+                                        {
+                                            Message = coord
+                                        };
+                                        string mensagemRedeJsonStrong = JsonConvert.SerializeObject(mensagemRede);
+                                        _instrucaoRede = InstrucaoRede.Wait;
 
-                                    binaryWriter.Write(mensagemRedeJsonStrong);
+                                        binaryWriter.Write(mensagemRedeJsonStrong);
+                                        enviado = true;
+                                    }
+                                    else
+                                    {
+                                        Console.WriteLine("Já tentou essa coordenada. Tente outra vez.");
+                                    }
                                 }
+                                // Unserialize the JSON string to the object NetworkMessage
                                 MensagemRedeRecebidaJsonString = binaryReader.ReadString();
-
                                 // Unserialize the JSON string to the object NetworkMessage
                                 MensagemRedeRecebida =
                                     JsonConvert.DeserializeObject<MensagemRede>(MensagemRedeRecebidaJsonString);
-                                ultimoMapaJogador = MensagemRedeRecebida.CampoJogador;
-                                ultimoMapaInimigo = MensagemRedeRecebida.CampoInimigo;
-                                Grelha.DesenharGrelha(ultimoMapaJogador, ultimoMapaInimigo);
+                                if (MensagemRedeRecebida.CampoJogador != null)
+                                {
+                                    ultimoMapaJogador = MensagemRedeRecebida.CampoJogador;
+                                    ultimoMapaInimigo = MensagemRedeRecebida.CampoInimigo;
+                                    Grelha.DesenharGrelha(ultimoMapaJogador, ultimoMapaInimigo);
+                                }
                                 Console.WriteLine(MensagemRedeRecebida.Message);
                                 break;
-                            }
+
                             case InstrucaoRede.JogoEnded:
                                 _estadoJogador = EstadoJogador.JogoEnded;
                                 break;
+
                         }
 
                         break;
                     case EstadoJogador.JogoEnded: //TODO acabar o jogo
+                    {
                         MensagemRedeRecebidaJsonString = binaryReader.ReadString();
 
-                                // Unserialize the JSON string to the object NetworkMessage
-                                MensagemRedeRecebida =
-                                    JsonConvert.DeserializeObject<MensagemRede>(MensagemRedeRecebidaJsonString);
-                                ultimoMapaJogador = MensagemRedeRecebida.CampoJogador;
-                                ultimoMapaInimigo = MensagemRedeRecebida.CampoInimigo;
-                                Grelha.DesenharGrelha(ultimoMapaJogador, ultimoMapaInimigo);
-                                Console.WriteLine(MensagemRedeRecebida.Message);
+                        // Unserialize the JSON string to the object NetworkMessage
+                        MensagemRedeRecebida =
+                            JsonConvert.DeserializeObject<MensagemRede>(MensagemRedeRecebidaJsonString);
+                        ultimoMapaJogador = MensagemRedeRecebida.CampoJogador;
+                        ultimoMapaInimigo = MensagemRedeRecebida.CampoInimigo;
+                        Grelha.DesenharGrelha(ultimoMapaJogador, ultimoMapaInimigo);
+                        Console.WriteLine(MensagemRedeRecebida.Message);
                         break;
+                    }
                 }
             }
         }

@@ -42,7 +42,7 @@ namespace Servidor.Controller
                 if (jogador.TcpClient.Connected && jogador.TcpClient.GetStream().DataAvailable)
                 {
                     string message = jogador.BinaryReader.ReadString();
-
+                    
                     // Unserialize the JSON string to the object NetworkMessage
                     MensagemRede receivedNetworkMessage = JsonConvert.DeserializeObject<MensagemRede>(message);
                     jogador.CampoJogador = receivedNetworkMessage.CampoJogador;
@@ -115,47 +115,53 @@ namespace Servidor.Controller
                 NumPart = result2.Groups["Numeric"].Value;
             }
             string Mensagem = null;
-            if (
-                StoreJogo.Instance.Jogo.PlayerList.Find(p => !p.Turn).CampoJogador[
-                    Int32.Parse(NumPart), ContarLetras(alphaPart)] == char.Parse("+"))
+            if (StoreJogo.Instance.Jogo.EstadoJogo != EstadoJogo.ConnectionOpen)
             {
-                Console.WriteLine("PUMBA NA BEIÇA");
-                StoreJogo.Instance.Jogo.PlayerList.Find(p => !p.Turn).CampoJogador[
-                    Int32.Parse(NumPart), ContarLetras(alphaPart)] = char.Parse("X");
-                StoreJogo.Instance.Jogo.PlayerList.Find(p => p.Turn).CampoInimigo[
-                    Int32.Parse(NumPart), ContarLetras(alphaPart)] = char.Parse("X");
-                Mensagem = CheckPlayerLife(Int32.Parse(NumPart), ContarLetras(alphaPart));
+                if (
+                    StoreJogo.Instance.Jogo.PlayerList.Find(p => !p.Turn).CampoJogador[
+                        Int32.Parse(NumPart), ContarLetras(alphaPart)] == char.Parse("+"))
+                {
+                    Console.WriteLine("PUMBA NA BEIÇA");
+                    StoreJogo.Instance.Jogo.PlayerList.Find(p => !p.Turn).CampoJogador[
+                        Int32.Parse(NumPart), ContarLetras(alphaPart)] = char.Parse("X");
+                    StoreJogo.Instance.Jogo.PlayerList.Find(p => p.Turn).CampoInimigo[
+                        Int32.Parse(NumPart), ContarLetras(alphaPart)] = char.Parse("X");
+                    Mensagem = CheckPlayerLife(Int32.Parse(NumPart), ContarLetras(alphaPart));
+                }
+                else
+                {
+                    StoreJogo.Instance.Jogo.PlayerList.Find(p => !p.Turn).CampoJogador[
+                        Int32.Parse(NumPart), ContarLetras(alphaPart)] = char.Parse("O");
+                    StoreJogo.Instance.Jogo.PlayerList.Find(p => p.Turn).CampoInimigo[
+                        Int32.Parse(NumPart), ContarLetras(alphaPart)] = char.Parse("O");
+                    Mensagem = "Falhou!";
+
+                }
+
+                Console.WriteLine(StoreJogo.Instance.Jogo.PlayerList.Find(p => !p.Turn).PlayerName);
+                MensagemRede networkMessageToSend = new MensagemRede()
+                {
+                    Message = Mensagem,
+                    CampoJogador = StoreJogo.Instance.Jogo.PlayerList.Find(p => p.Turn).CampoJogador,
+                    CampoInimigo = StoreJogo.Instance.Jogo.PlayerList.Find(p => p.Turn).CampoInimigo
+                };
+                string networkMessageToSenndJsonString = JsonConvert.SerializeObject(networkMessageToSend);
+
+                StoreJogo.Instance.Jogo.PlayerList.Find(p => p.Turn).BinaryWriter.Write(networkMessageToSenndJsonString);
+
+                networkMessageToSend = new MensagemRede()
+                {
+                    Message = Mensagem,
+                    CampoJogador = StoreJogo.Instance.Jogo.PlayerList.Find(p => !p.Turn).CampoJogador,
+                    CampoInimigo = StoreJogo.Instance.Jogo.PlayerList.Find(p => !p.Turn).CampoInimigo
+                };
+                networkMessageToSenndJsonString = JsonConvert.SerializeObject(networkMessageToSend);
+
+                StoreJogo.Instance.Jogo.PlayerList.Find(p => !p.Turn)
+                    .BinaryWriter.Write(networkMessageToSenndJsonString);
+
+                // TODO continuar esta parte
             }
-            else
-            {
-                StoreJogo.Instance.Jogo.PlayerList.Find(p => !p.Turn).CampoJogador[
-                    Int32.Parse(NumPart), ContarLetras(alphaPart)] = char.Parse("O");
-                StoreJogo.Instance.Jogo.PlayerList.Find(p => p.Turn).CampoInimigo[
-                    Int32.Parse(NumPart), ContarLetras(alphaPart)] = char.Parse("O");
-                Mensagem = "Falhou!";
-            }
-            Console.WriteLine(StoreJogo.Instance.Jogo.PlayerList.Find(p => !p.Turn).PlayerName);
-            MensagemRede networkMessageToSend = new MensagemRede()
-            {
-                Message = Mensagem,
-                CampoJogador = StoreJogo.Instance.Jogo.PlayerList.Find(p => p.Turn).CampoJogador,
-                CampoInimigo = StoreJogo.Instance.Jogo.PlayerList.Find(p => p.Turn).CampoInimigo
-            };
-            string networkMessageToSenndJsonString = JsonConvert.SerializeObject(networkMessageToSend);
-
-            StoreJogo.Instance.Jogo.PlayerList.Find(p => p.Turn).BinaryWriter.Write(networkMessageToSenndJsonString);
-
-            networkMessageToSend = new MensagemRede()
-            {
-                Message = Mensagem,
-                CampoJogador = StoreJogo.Instance.Jogo.PlayerList.Find(p => !p.Turn).CampoJogador,
-                CampoInimigo = StoreJogo.Instance.Jogo.PlayerList.Find(p => !p.Turn).CampoInimigo
-            };
-            networkMessageToSenndJsonString = JsonConvert.SerializeObject(networkMessageToSend);
-
-            StoreJogo.Instance.Jogo.PlayerList.Find(p => !p.Turn).BinaryWriter.Write(networkMessageToSenndJsonString);
-            
-            // TODO continuar esta parte
         }
 
         private string CheckPlayerLife(int x, int y)

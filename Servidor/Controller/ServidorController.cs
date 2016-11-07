@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Runtime.Remoting.Channels;
 using System.Runtime.Remoting.Contexts;
 using System.Text;
 using System.Threading;
@@ -68,11 +69,15 @@ namespace Servidor.Controller
                     case EstadoJogo.ConnectionOpen:
                         // Connection state is open, players may connect
                         // to the server and inform the server of their information
-                        if (StoreJogo.Instance.Jogo.ConnectingPlayers < ServidorConfig.MaxPlayers - 1)
+                        if (StoreJogo.Instance.Jogo.ConnectingPlayers < ServidorConfig.MaxPlayers)
                         {
-                            TcpClient tcpClient = tcpListener.AcceptTcpClient();
-                            Thread newThread = new Thread(new ParameterizedThreadStart(ProcessClient));
-                            newThread.Start(tcpClient);
+                            if (tcpListener.Pending())
+                            {
+                                TcpClient tcpClient = tcpListener.AcceptTcpClient();
+
+                                Thread newThread = new Thread(new ParameterizedThreadStart(ProcessClient));
+                                newThread.Start(tcpClient);
+                            }
                         }
                         else
                         {
@@ -90,14 +95,13 @@ namespace Servidor.Controller
                     case EstadoJogo.JogoStarted:
                         // All the game process should be processed here
                         if (StoreJogo.Instance.Jogo.PlayerList.Last().ProntoJogador &&
-                            StoreJogo.Instance.Jogo.PlayerList.First().ProntoJogador &&
-                            StoreJogo.Instance.Jogo.EstadoJogo != EstadoJogo.ConnectionClosed)
+                            StoreJogo.Instance.Jogo.PlayerList.First().ProntoJogador)
                         {
                             _jogoController.NextTurn();
                             _jogoController.AskPlayerToPlay();
                             _jogoController.ReceiveAnswer();
                         }
-                        else if (StoreJogo.Instance.Jogo.EstadoJogo != EstadoJogo.ConnectionClosed)
+                        else
                         {
                             _jogoController.PlacingBoats();
                         }
@@ -159,7 +163,6 @@ namespace Servidor.Controller
                                     StoreJogo.Instance.Jogo.PlayerList.Find(j => !j.TcpClient.Connected).PlayerName +
                                     " fechou a conexao, por favor aguarde.",
                                 NetworkInstruction = InstrucaoRede.WaitConnection
-
                             };
                             string mensagemRedeString = JsonConvert.SerializeObject(mensagemRede);
                             StoreJogo.Instance.Jogo.PlayerList.Find(j => j.TcpClient.Connected).BinaryWriter.Write(mensagemRedeString);
@@ -168,6 +171,7 @@ namespace Servidor.Controller
                             break;
                         }
                     }
+                    Thread.Sleep(1000);
                 }
                 if (StoreJogo.Instance.Jogo.EstadoJogo == EstadoJogo.ConnectionOpen)
                 {
@@ -179,7 +183,6 @@ namespace Servidor.Controller
 
         private void ProcessClient(object tcpClientObject)
         {
-            StoreJogo.Instance.Jogo.ConnectingPlayers++;
             TcpClient tcpClient = tcpClientObject as TcpClient;
             if (tcpClient == null)
             {
@@ -228,10 +231,10 @@ namespace Servidor.Controller
             string networkMessageToSendJsonString = JsonConvert.SerializeObject(networkMessageToSend);
 
             binaryWriter.Write(networkMessageToSendJsonString);
-
+            StoreJogo.Instance.Jogo.ConnectingPlayers++;
             // We check for the current number of players
             // to see if we can start the game
-            if (StoreJogo.Instance.Jogo.PlayerList.Count == ServidorConfig.MaxPlayers)
+            if (StoreJogo.Instance.Jogo.ConnectingPlayers == ServidorConfig.MaxPlayers)
             {
                 StoreJogo.Instance.Jogo.EstadoJogo = EstadoJogo.JogoInitializing;
             }
@@ -239,30 +242,6 @@ namespace Servidor.Controller
             // Display some information to the server console
             Console.WriteLine("Player" + receivedNetworkMessage.Jogador.PlayerName + " entered the game");
             Console.WriteLine("Players " + StoreJogo.Instance.Jogo.PlayerList.Count + "/" + ServidorConfig.MaxPlayers);
-        }
-
-        private void InitBoats(Jogador jogador)
-        {
-            jogador.Barcos[0].Nome = "Porta Aviões";
-            jogador.Barcos[0].Vida = 5;
-            jogador.Barcos[0].Coordenadas = new int[jogador.Barcos[0].Vida, 2]; 
-            jogador.Barcos[0].Colocado = false;
-            jogador.Barcos[1].Nome = "Fragata";
-            jogador.Barcos[1].Vida = 4;
-            jogador.Barcos[1].Coordenadas = new int[jogador.Barcos[1].Vida, 2];
-            jogador.Barcos[1].Colocado = false;
-            jogador.Barcos[2].Nome = "Submarino";
-            jogador.Barcos[2].Vida = 3;
-            jogador.Barcos[2].Coordenadas = new int[jogador.Barcos[2].Vida, 2];
-            jogador.Barcos[2].Colocado = false;
-            jogador.Barcos[3].Nome = "Patrulha";
-            jogador.Barcos[3].Vida = 3;
-            jogador.Barcos[3].Coordenadas = new int[jogador.Barcos[3].Vida, 2];
-            jogador.Barcos[3].Colocado = false;
-            jogador.Barcos[4].Nome = "Torpedeiro";
-            jogador.Barcos[4].Vida = 2;
-            jogador.Barcos[4].Coordenadas = new int[jogador.Barcos[4].Vida, 2];
-            jogador.Barcos[4].Colocado = false;
         }
     }
 }
